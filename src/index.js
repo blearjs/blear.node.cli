@@ -9,5 +9,16 @@
 'use strict';
 
 
-module.exports = 'index';
+var CLI = require('./cli.class');
 
+
+module.exports = new CLI();
+
+// /**
+//  *
+//  */
+// exports.command = function () {
+//     var cli =  new CLI();
+//     cli.command.apply(cli, arguments);
+//     return cli;
+// };
