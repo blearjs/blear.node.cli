@@ -1,5 +1,5 @@
 {
-  "name": "blear.MODULE_PATH.MODULE_NAME",
+  "name": "blear.node.cli",
   "version": "1.0.0",
   "description": "描述",
   "scripts": {
@@ -26,13 +26,13 @@
     "url": "https://ydr.me"
   },
   "contributors": [],
-  "homepage": "https://github.com/blearjs/blear.MODULE_PATH.MODULE_NAME",
+  "homepage": "https://github.com/blearjs/blear.node.cli",
   "repository": {
     "type": "git",
-    "url": "https://github.com/blearjs/blear.MODULE_PATH.MODULE_NAME"
+    "url": "https://github.com/blearjs/blear.node.cli"
   },
   "bugs": {
-    "url": "https://github.com/blearjs/blear.MODULE_PATH.MODULE_NAME/issues"
+    "url": "https://github.com/blearjs/blear.node.cli/issues"
   },
   "dependencies": {},
   "peerDependencies": {},
