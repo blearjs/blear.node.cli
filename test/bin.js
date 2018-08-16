@@ -13,7 +13,7 @@ var cli = require('../src/index');
 cli
     .command()
     // .useage('')
-    .help()
+    .helper()
     .version('1.0.0')
     .action(function (options) {
         if (options.help) {
@@ -22,33 +22,33 @@ cli
 
         }
     })
-    // .command('init')
-    // .option('config', {
-    //     alias: ['c', 'C'],
-    //     type: 'string'
-    // })
-    // .option('ssl', {
-    //     alias: 's',
-    //     type: 'boolean'
-    // })
-    // .option('path', {
-    //     alias: 'p',
-    //     type: 'string',
-    //     default: 'abc',
-    //     transform: function (val, options) {
-    //         return val + options.config;
-    //     }
-    // })
-    // .option('help')
-    // .action(function (options) {
-    //     console.log('action init', options);
-    // })
-    // .command('get')
-    // .option('ssl', {
-    //     alias: ['s'],
-    //     type: 'boolean'
-    // })
-    // .action(function (options) {
-    //     console.log('action get', options);
-    // })
+    .command('init', '初始化一个配置文件')
+    .helper()
+    .option('config', {
+        alias: ['c', 'C'],
+        type: 'string'
+    })
+    .option('ssl', {
+        alias: 's',
+        type: 'boolean'
+    })
+    .option('path', {
+        alias: 'p',
+        type: 'string',
+        default: 'abc',
+        transform: function (val, options) {
+            return val + options.config;
+        }
+    })
+    .action(function (options) {
+        console.log('action init', options);
+    })
+    .command('get')
+    .option('ssl', {
+        alias: ['s'],
+        type: 'boolean'
+    })
+    .action(function (options) {
+        console.log('action get', options);
+    })
     .parse();

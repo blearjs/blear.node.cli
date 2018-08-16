@@ -84,11 +84,11 @@ var CLI = Class.extend({
      * 帮助配置
      * @returns {CLI}
      */
-    help: function () {
+    helper: function () {
         return this.option('help', {
             alias: ['h', 'H'],
             desc: 'output usage information',
-            action: this[_help]
+            action: this.help
         });
     },
 
@@ -136,114 +136,105 @@ var CLI = Class.extend({
      * @returns {CLI}
      */
     parse: function (argv) {
-        console.log(this[_commanders]);
-        console.log(this[_globalCommander]);
+        // console.log(this[_commanders]);
+        // console.log(this[_globalCommander]);
         argv = argv || process.argv;
         this[_bin] = path.basename(argv[1]);
-        var configs = minimist(argv.slice(2), {
+        this[_argv] = minimist(argv.slice(2), {
             boolean: ['version', 'help'],
             alias: {
-                version: 'v',
-                help: 'h'
+                version: ['v', 'V'],
+                help: ['h', 'H']
             }
         });
-        var command = configs._[0];
+        this.exec(this[_argv]._[0]);
+    },
 
-        if (command) {
-            var commander = this[_commanders][command];
+    /**
+     * 执行命令
+     * @param command
+     * @returns {*}
+     */
+    exec: function (command) {
+        var commander = this[_commanders][command] || this[_globalCommander];
+        var options = {};
+        var helpOption = commander.options.help;
+        var versionOPtion = commander.options.version;
 
-            if (commander) {
-                this[_exec](commander, configs);
-            } else {
-                this[_exec](this[_globalCommander], configs);
-            }
-        } else {
-            this[_exec](this[_globalCommander], configs);
+        // console.log(commander, this[_argv]);
+        // console.log(helpOption);
+
+        if (this[_argv].help && helpOption && typeis.Function(helpOption.action)) {
+            return helpOption.action.call(this, command);
         }
+
+        if (this[_argv].version && versionOPtion && typeis.Function(versionOPtion.action)) {
+            return versionOPtion.action.call(this, command);
+        }
+
+        delete commander.options.help;
+        delete commander.options.version;
+        object.each(commander.options, function (key, desc) {
+            var val = null;
+
+            array.each(desc.keys, function (index, k) {
+                var v = this[_argv][k];
+
+                if (!typeis.Boolean(v) && !typeis.Undefined(v)) {
+                    v = String(v);
+                }
+
+                if (desc.type === 'boolean' && !typeis.Undefined(v)) {
+                    v = Boolean(v);
+                }
+
+                if (typeis(v) === desc.type) {
+                    val = v;
+                    return false;
+                }
+            });
+
+            val = val || desc.default;
+            options[key] = desc.transform(val, options);
+        });
+
+        commander.action.call(this, options);
+    },
+
+    /**
+     * 打印帮助信息
+     * @param command
+     */
+    help: function (command) {
+        var commander = this[_commanders][command] || this[_globalCommander];
+        var commanders = commander === this[_globalCommander] ? this[_commanders] : [commander];
+
+        console.log(console.pretty('Usage:', ['bold', 'underline']));
+        console.log('  ', this[_bin], '[options]');
+        console.log('  ', this[_bin], '<command> [options]');
+        console.log();
+        console.log(console.pretty('Commands:', ['bold', 'underline']));
+
+        object.each(commanders, function (index, commander) {
+            console.log('  ', commander.command, commander.desc);
+        });
+
+        console.log();
+        console.log(console.pretty('Options:', ['bold', 'underline']));
+        object.each(commander.options, function (key, desc) {
+            console.log('  ', desc._keys.join(', '), desc.desc);
+        });
     }
 });
 var sole = CLI.sole;
-var proto = CLI.prototype;
 var _bin = sole();
 var _banner = sole();
 var _globalCommander = sole();
 var _commanders = sole();
 var _currentCommander = sole();
 var _currentOptions = sole();
-var _exec = sole();
-var _help = sole();
+var _argv = sole();
 
-/**
- * 执行命令
- * @param commander
- * @param configs
- */
-proto[_exec] = function (commander, configs) {
-    if (!commander) {
-        return;
-    }
-
-    var options = {};
-    var helpOption = commander.options.help;
-    var versionOPtion = commander.options.version;
-
-    if (configs.help && helpOption && helpOption.action) {
-        return helpOption.action.call(this);
-    }
-
-    if (configs.version && versionOPtion && versionOPtion.action) {
-        return versionOPtion.action.call(this);
-    }
-
-    delete commander.options.help;
-    delete commander.options.version;
-    object.each(commander.options, function (key, desc) {
-        var val = null;
-
-        array.each(desc.keys, function (index, k) {
-            var v = configs[k];
-
-            if (!typeis.Boolean(v) && !typeis.Undefined(v)) {
-                v = String(v);
-            }
-
-            if (desc.type === 'boolean' && !typeis.Undefined(v)) {
-                v = Boolean(v);
-            }
-
-            if (typeis(v) === desc.type) {
-                val = v;
-                return false;
-            }
-        });
-
-        val = val || desc.default;
-        options[key] = desc.transform(val, options);
-    });
-
-    commander.action.call(this, options);
-};
-
-/**
- * 打印帮助信息
- * @param command
- */
-proto[_help] = function (command) {
-    var commander = this[_commanders][command] || this[_globalCommander];
-    console.log(console.pretty('Usage:', ['bold', 'underline']));
-    console.log('  ', this[_bin], '[options]');
-    console.log('  ', this[_bin], '<command> [options]');
-    console.log();
-    console.log(console.pretty('Commands:', ['bold', 'underline']));
-    object.each(this[_commanders], function (index, commander) {
-        console.log('  ', commander.command);
-    });
-    console.log();
-    console.log(console.pretty('Options:', ['bold', 'underline']));
-    object.each(commander.options, function (key, desc) {
-        console.log('  ', desc._keys.join(', '), desc.desc);
-    });
-};
 
 CLI.defaults = defaults;
 module.exports = CLI;
