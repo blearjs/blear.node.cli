@@ -13,12 +13,3 @@ var CLI = require('./cli.class');
 
 
 module.exports = new CLI();
-
-// /**
-//  * @returns {CLI}
-//  */
-// exports.command = function () {
-//     var cli =  new CLI();
-//     cli.command.apply(cli, arguments);
-//     return cli;
-// };

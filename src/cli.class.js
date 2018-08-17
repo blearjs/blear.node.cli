@@ -271,6 +271,7 @@ var CLI = Class.extend({
         }
 
         if (this[_argv].version && versionOPtion && typeis.Function(versionOPtion.action)) {
+            this[_slogn]();
             return versionOPtion.action.call(this, command);
         }
 
