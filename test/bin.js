@@ -108,12 +108,5 @@ cli
     .action(function (options) {
         console.log('action init', options);
     })
-    .command('get')
-    .option('ssl', {
-        alias: ['s'],
-        type: 'boolean'
-    })
-    .action(function (options) {
-        console.log('action get', options);
-    })
+    .command(require('./cmd-get'))
     .parse();
