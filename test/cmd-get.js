@@ -27,8 +27,13 @@ exports.options = {
 };
 
 exports.usages = [
-    {example: 'bin get'},
-    {example: 'bin get --domain', describe: '根据域名获取远程地址的信息以展示给你看'}
+    {
+        example: 'bin get'
+    },
+    {
+        example: 'bin get --domain',
+        describe: '根据域名获取远程地址的信息以展示给你看'
+    }
 ];
 
 exports.action = function (options) {
