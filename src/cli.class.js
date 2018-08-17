@@ -14,7 +14,9 @@ var access = require('blear.utils.access');
 var array = require('blear.utils.array');
 var string = require('blear.utils.string');
 var typeis = require('blear.utils.typeis');
+var version = require('blear.utils.version');
 var console = require('blear.node.console');
+var request = require('blear.node.request');
 var path = require('path');
 var minimist = require('minimist');
 
@@ -22,7 +24,23 @@ var noop = function () {
     // empty
 };
 var defaults = {
-    keyLength: 30
+    /**
+     * 键显示的长度
+     * @type number
+     */
+    keyLength: 30,
+
+    /**
+     * 命令名称
+     * @type string
+     */
+    bin: '',
+
+    /**
+     * 命令模块的 package.json 描述
+     * @type null | object
+     */
+    package: null
 };
 var CLI = Class.extend({
     constructor: function () {
@@ -119,8 +137,9 @@ var CLI = Class.extend({
 
         if (typeis.String(version)) {
             ver = function () {
-                console.log(version);
-            }
+                console.log('local version', version);
+                checkVersion(this[_options].package);
+            };
         }
 
         return this.option('version', {
@@ -243,7 +262,7 @@ var CLI = Class.extend({
         }
 
         this[_options] = object.assign({}, defaults, options);
-        this[_bin] = path.basename(argv[1]);
+        this[_bin] = this[_options].bin || path.basename(argv[1]);
         this[_argv] = minimist(argv.slice(2), {
             boolean: ['version', 'help'],
             alias: {
@@ -483,3 +502,46 @@ function indentText(indent, text, indentFirstLine) {
     return list.join('\n');
 }
 
+
+function checkVersion(pkg) {
+    console.loading();
+    request({
+        url: 'http://registry.npm.taobao.org/' + pkg.name
+    }, function (err, body) {
+        if (err) {
+            console.loadingEnd();
+            return
+        }
+
+        try {
+            var json = JSON.parse(body);
+        } catch (err) {
+            console.loadingEnd();
+            return;
+        }
+
+        var latestVersion = json['dist-tags'] && json['dist-tags'].latest || '';
+
+        if (!latestVersion) {
+            console.loadingEnd();
+            return;
+        }
+
+        console.loadingEnd();
+        var currentVersion = pkg.version;
+        if (version.lt(currentVersion, latestVersion)) {
+            console.log(
+                console.pretty(
+                    'Update available',
+                    currentVersion,
+                    '→',
+                    latestVersion,
+                    [
+                        'bold',
+                        'red'
+                    ]
+                )
+            );
+        }
+    });
+}
