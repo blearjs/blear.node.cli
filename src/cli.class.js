@@ -104,11 +104,11 @@ var CLI = Class.extend({
         }
 
         if (detail.version) {
-            this.version(detail.version);
+            this.version(detail.version === true ? '' : detail.version);
         }
 
         if (detail.helper) {
-            this.helper();
+            this.helper(detail.helper === true ? '' : detail.helper);
         }
 
         if (detail.options) {
