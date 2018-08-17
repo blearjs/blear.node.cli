@@ -109,23 +109,30 @@ describe('测试文件', function () {
         })
         .command(commandGet());
 
+    var options = {
+        package: {
+            name: 'example',
+            version: '1.0.0'
+        }
+    };
+
     it('global command', function () {
-        cli.parse();
+        cli.parse(options);
         cli.parse([
             'node',
             'bin',
             '--help'
-        ]);
+        ], options);
         cli.parse([
             'node',
             'bin',
             '--version'
-        ]);
+        ], options);
         cli.parse([
             'node',
             'bin',
             '--news'
-        ]);
+        ], options);
     });
 
     it('`init` command', function () {
@@ -133,16 +140,7 @@ describe('测试文件', function () {
             'node',
             'bin',
             'init'
-        ]);
-        cli.parse([
-            'node',
-            'bin',
-            'init',
-            '--config',
-            'abc'
-        ], {
-            keyLength: 100
-        });
+        ], options);
     });
 });
 
@@ -153,8 +151,6 @@ function commandGet() {
     exports.describe = '根据配置获取远程信息';
 
     exports.helper = true;
-    exports.version = '1.1.100';
-
     exports.options = {
         domain: {
             alias: 'd',

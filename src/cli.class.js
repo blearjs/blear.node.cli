@@ -128,24 +128,17 @@ var CLI = Class.extend({
 
     /**
      * 版本配置
-     * @param version {string|function} 版本号或版本号生产函数
      * @param [describe] {string}
      * @returns {CLI}
      */
-    version: function (version, describe) {
-        var ver = version;
-
-        if (typeis.String(version)) {
-            ver = function () {
-                console.log('local version', version);
-                checkVersion(this[_options].package);
-            };
-        }
-
+    version: function (describe) {
         return this.option('version', {
             alias: ['v', 'V'],
             describe: describe || 'print version information',
-            action: ver
+            action: function () {
+                console.log('local version', this[_options].package.version);
+                checkVersion(this[_options].package);
+            }
         });
     },
 
@@ -241,6 +234,8 @@ var CLI = Class.extend({
      * 解析入参
      * @param [argv]
      * @param [options]
+     * @param [options.keyLength]
+     * @param [options.package]
      * @returns {CLI}
      */
     parse: function (argv, options) {
@@ -259,6 +254,10 @@ var CLI = Class.extend({
                     argv = process.argv;
                 }
                 break;
+        }
+
+        if (!options.package) {
+            throw new TypeError('`package` parameter cannot be empty');
         }
 
         this[_options] = object.assign({}, defaults, options);
