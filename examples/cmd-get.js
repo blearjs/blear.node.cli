@@ -12,7 +12,7 @@ exports.command = 'get';
 exports.describe = '根据配置获取远程信息';
 
 exports.helper = true;
-exports.version = '版本号再此';
+exports.versioning = true;
 
 exports.options = {
     domain: {

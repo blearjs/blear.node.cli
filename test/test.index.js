@@ -23,7 +23,7 @@ describe('测试文件', function () {
         )
         .command()
         .helper()
-        .version('1.0.0', '输出版本号，呵呵')
+        .versioning('输出版本号，呵呵')
         .usage(
             'bin [options]'
         )

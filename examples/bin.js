@@ -21,7 +21,7 @@ cli
     )
     .command()
     .helper()
-    .version('输出版本号，呵呵')
+    .versioning('输出版本号，呵呵')
     .usage(
         'bin [options]'
     )

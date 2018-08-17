@@ -103,8 +103,8 @@ var CLI = Class.extend({
             this.error(detail.error);
         }
 
-        if (detail.version) {
-            this.version(detail.version === true ? '' : detail.version);
+        if (detail.versioning) {
+            this.versioning(detail.versioning === true ? '' : detail.versioning);
         }
 
         if (detail.helper) {
@@ -131,14 +131,11 @@ var CLI = Class.extend({
      * @param [describe] {string}
      * @returns {CLI}
      */
-    version: function (describe) {
+    versioning: function (describe) {
         return this.option('version', {
             alias: ['v', 'V'],
             describe: describe || 'print version information',
-            action: function () {
-                console.log('local version', this[_options].package.version);
-                checkVersion(this[_options].package);
-            }
+            action: this.version
         });
     },
 
@@ -391,6 +388,14 @@ var CLI = Class.extend({
             optionsPrints.push([option._keys.join(', '), option.describe || '']);
         });
         this[_print](padding, optionsPrints);
+    },
+
+    /**
+     * 输出版本并进行版本比较
+     */
+    version: function () {
+        console.log('local version', this[_options].package.version);
+        checkVersion(this[_options].package);
     }
 });
 var sole = CLI.sole;
@@ -407,7 +412,6 @@ var _argv = sole();
 var _slogn = sole();
 var _print = sole();
 var _error = sole();
-var _commander = sole();
 
 prot[_slogn] = function () {
     if (this[_banner]) {
@@ -504,6 +508,10 @@ function indentText(indent, text, indentFirstLine) {
 }
 
 
+/**
+ * 版本检查
+ * @param pkg
+ */
 function checkVersion(pkg) {
     console.loading();
     request({
