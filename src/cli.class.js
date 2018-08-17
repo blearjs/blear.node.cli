@@ -184,7 +184,9 @@ var CLI = Class.extend({
     option: function (key, option) {
         option = option || {};
         this[_currentOptions][key] = option;
-        option.alias = typeis.Array(option.alias) ? option.alias : [option.alias];
+        option.alias = typeis.Array(option.alias)
+            ? option.alias
+            : (option.alias ? [option.alias] : []);
         option.keys = [key].concat(option.alias);
         option._keys = ['--' + key].concat(option.alias.map(function (key) {
             return '-' + key;
