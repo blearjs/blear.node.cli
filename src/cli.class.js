@@ -47,11 +47,20 @@ var CLI = Class.extend({
 
     /**
      * 新增命令
-     * @param [command] {string} 命令，如果为空，则为全局命令
+     * @param [command] {string|object} 命令，如果为空，则为全局命令，或命令描述
      * @param [describe] {string} 描述
      * @returns {CLI}
      */
     command: function (command, describe) {
+        var detail = {};
+        var the = this;
+
+        if (typeis.Object(command)) {
+            detail = command;
+            command = detail.command;
+            describe = detail.describe;
+        }
+
         if (command) {
             this[_currentCommander] = {};
             this[_commanderMap][command] = this[_currentCommander];
@@ -67,16 +76,47 @@ var CLI = Class.extend({
         this[_currentCommander].usageList = [];
         this[_currentCommander].options = this[_currentOptions];
         this[_commanderList].push(this[_currentCommander]);
+
+        if (detail.action) {
+            this.action(detail.action);
+        }
+
+        if (detail.error) {
+            this.error(detail.error);
+        }
+
+        if (detail.version) {
+            this.version(detail.version);
+        }
+
+        if (detail.helper) {
+            this.helper();
+        }
+
+        if (detail.options) {
+            object.each(detail.options, function (key, describe) {
+                the.option(key, describe);
+            });
+        }
+
+        if (detail.usages) {
+            array.each(detail.usages, function (index, usage) {
+                the.usage(usage.example, usage.describe);
+            });
+        }
+
         return this;
     },
 
     /**
      * 版本配置
      * @param version {string|function} 版本号或版本号生产函数
+     * @param [describe] {string}
      * @returns {CLI}
      */
-    version: function (version) {
+    version: function (version, describe) {
         var ver = version;
+
         if (typeis.String(version)) {
             ver = function () {
                 console.log(version);
@@ -85,19 +125,20 @@ var CLI = Class.extend({
 
         return this.option('version', {
             alias: ['v', 'V'],
-            describe: 'output the version number',
+            describe: describe || 'print version information',
             action: ver
         });
     },
 
     /**
      * 帮助配置
+     * @param [describe] {string}
      * @returns {CLI}
      */
-    helper: function () {
+    helper: function (describe) {
         return this.option('help', {
             alias: ['h', 'H'],
-            describe: 'output usage information',
+            describe: describe || 'print help information',
             action: this.help
         });
     },
@@ -345,6 +386,7 @@ var _argv = sole();
 var _slogn = sole();
 var _print = sole();
 var _error = sole();
+var _commander = sole();
 
 prot[_slogn] = function () {
     if (this[_banner]) {
@@ -408,6 +450,7 @@ prot[_error] = function (key, option) {
     console.error(option.message);
 };
 
+
 CLI.defaults = defaults;
 module.exports = CLI;
 
@@ -439,9 +482,3 @@ function indentText(indent, text, indentFirstLine) {
     return list.join('\n');
 }
 
-function cyan(val) {
-    console.pretty(
-        val,
-        [console.colors.cyan]
-    );
-}
