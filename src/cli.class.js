@@ -62,6 +62,7 @@ var CLI = Class.extend({
         this[_currentOptions] = {};
         this[_currentCommander].command = command;
         this[_currentCommander].action = noop;
+        this[_currentCommander].error = this[_error];
         this[_currentCommander].describe = describe || '';
         this[_currentCommander].usageList = [];
         this[_currentCommander].options = this[_currentOptions];
@@ -103,16 +104,14 @@ var CLI = Class.extend({
 
     /**
      * 添加用法
-     * @param usage {string|array<string, string>}
+     * @param example {string}
+     * @param [describe] {string}
      * @returns {CLI}
      */
-    usage: function (usage/*...*/) {
-        this[_currentCommander].usageList = array.map(access.args(arguments), function (item) {
-            if (typeis.String(item)) {
-                return [item, ''];
-            }
-
-            return item;
+    usage: function (example, describe) {
+        this[_currentCommander].usageList.push({
+            example: example,
+            describe: describe || ''
         });
         return this;
     },
@@ -120,26 +119,35 @@ var CLI = Class.extend({
     /**
      * 配置参数
      * @param key
-     * @param [detail]
-     * @param [detail.alias]
-     * @param [detail.default]
-     * @param [detail.type]
-     * @param [detail.transform]
-     * @param [detail.describe]
-     * @param [detail.action]
+     * @param [option]
+     * @param [option.alias]
+     * @param [option.default]
+     * @param [option.type]
+     * @param [option.transform]
+     * @param [option.describe]
+     * @param [option.action]
      * @returns {CLI}
      */
-    option: function (key, detail) {
-        detail = detail || {};
-        this[_currentOptions][key] = detail;
-        detail.alias = typeis.Array(detail.alias) ? detail.alias : [detail.alias];
-        detail.keys = [key].concat(detail.alias);
-        detail._keys = ['--' + key].concat(detail.alias.map(function (key) {
+    option: function (key, option) {
+        option = option || {};
+        this[_currentOptions][key] = option;
+        option.alias = typeis.Array(option.alias) ? option.alias : [option.alias];
+        option.keys = [key].concat(option.alias);
+        option._keys = ['--' + key].concat(option.alias.map(function (key) {
             return '-' + key;
         }));
-        detail.transform = typeis.Function(detail.transform) ? detail.transform : function (val) {
+        option._keyMap = array.reduce(option.keys, function (p, c, i) {
+            p[c] = key;
+            return p;
+        }, {});
+        option.transform = typeis.Function(option.transform) ? option.transform : function (val) {
             return val;
         };
+        option.type = option.type || 'string';
+        option.message = option.message || '`' + key + '` parameter cannot be empty';
+        if (typeis.Undefined(option.default)) {
+            option.default = option.type === 'boolean' ? false : '';
+        }
         return this;
     },
 
@@ -152,6 +160,20 @@ var CLI = Class.extend({
         if (typeis.Function(action)) {
             this[_currentCommander].action = action;
         }
+
+        return this;
+    },
+
+    /**
+     * 参数有错误
+     * @param error
+     * @returns {CLI}
+     */
+    error: function (error) {
+        if (typeis.Function(error)) {
+            this[_currentCommander].error = error;
+        }
+
         return this;
     },
 
@@ -197,7 +219,7 @@ var CLI = Class.extend({
      * @returns {*}
      */
     exec: function (command) {
-        var commander = this[_commanderMap][command] || this[_globalCommander];
+        var commander = command ? this[_commanderMap][command] || this[_globalCommander] : this[_globalCommander];
         var options = {};
         var helpOption = commander.options.help;
         var versionOPtion = commander.options.version;
@@ -213,30 +235,55 @@ var CLI = Class.extend({
 
         delete commander.options.help;
         delete commander.options.version;
-        object.each(commander.options, function (key, detail) {
+        var broken = false;
+        object.each(commander.options, function (key, option) {
+            if (broken === true) {
+                return false;
+            }
+
             var val = null;
 
-            array.each(detail.keys, function (index, k) {
+            array.each(option.keys, function (index, k) {
                 var v = the[_argv][k];
 
-                if (!typeis.Boolean(v) && !typeis.Undefined(v)) {
-                    v = String(v);
+                if (v === undefined) {
+                    return;
                 }
 
-                if (detail.type === 'boolean' && !typeis.Undefined(v)) {
+                if (option.type === 'boolean') {
                     v = Boolean(v);
+                } else {
+                    if (v === true) {
+                        v = '';
+                    }
+
+                    v = string.ify(v);
                 }
 
-                if (typeis(v) === detail.type) {
+                if (typeis(v) === option.type) {
+                    key = option._keyMap[k];
                     val = v;
                     return false;
                 }
             });
 
-            val = val || detail.default;
-            options[key] = detail.transform(val, options);
+            val = val || option.default;
+            val = option.transform(val, options);
+
+            if (option.type === 'string' && option.required === true && val.length === 0) {
+                broken = true;
+                commander.error.call(the, key, option);
+                return false;
+            }
+
+            options[key] = val;
         });
 
+        if (broken === true) {
+            return false;
+        }
+
+        this[_slogn]();
         commander.action.call(this, options);
     },
 
@@ -248,18 +295,15 @@ var CLI = Class.extend({
         var commander = this[_commanderMap][command] || this[_globalCommander];
         var commanders = commander === this[_globalCommander] ? this[_commanderList] : [commander];
         var padding = 2;
-        var indent = string.repeat(' ', padding);
 
-        if (this[_banner]) {
-            console.log(this[_banner]);
-        }
+        this[_slogn]();
 
         // print usage
         console.log(console.pretty('Usage:', ['grey', 'underline']));
         var usagePrints = [];
         array.each(commanders, function (index, commander) {
             array.each(commander.usageList, function (index, usage) {
-                usagePrints.push(usage);
+                usagePrints.push([usage.example, usage.describe]);
             });
         });
         this[_print](padding, usagePrints);
@@ -273,7 +317,7 @@ var CLI = Class.extend({
                 return;
             }
 
-            commandPrints.push([commander.command, commander.describe || '']);
+            commandPrints.push([commander.command, commander.describe]);
         });
         this[_print](padding, commandPrints);
 
@@ -281,8 +325,8 @@ var CLI = Class.extend({
         console.log();
         console.log(console.pretty('Options:', ['grey', 'underline']));
         var optionsPrints = [];
-        object.each(commander.options, function (key, detail) {
-            optionsPrints.push([detail._keys.join(', '), detail.describe || '']);
+        object.each(commander.options, function (key, option) {
+            optionsPrints.push([option._keys.join(', '), option.describe || '']);
         });
         this[_print](padding, optionsPrints);
     }
@@ -298,7 +342,15 @@ var _commanderList = sole();
 var _currentCommander = sole();
 var _currentOptions = sole();
 var _argv = sole();
+var _slogn = sole();
 var _print = sole();
+var _error = sole();
+
+prot[_slogn] = function () {
+    if (this[_banner]) {
+        console.log(this[_banner]);
+    }
+};
 
 /**
  * 缩进打印
@@ -344,6 +396,16 @@ prot[_print] = function (indentLength, list) {
     });
 
     console.log(lines.join('\n'));
+};
+
+/**
+ * 打印错误信息
+ * @param key
+ * @param option
+ */
+prot[_error] = function (key, option) {
+    this[_slogn]();
+    console.error(option.message);
 };
 
 CLI.defaults = defaults;

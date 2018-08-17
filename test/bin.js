@@ -26,26 +26,33 @@ cli
     .helper()
     .version('1.0.0')
     .usage(
-        'bin [options]',
-        'bin <comm' + '' + 'and> [options] [looooooooooooooooooooooooooong]',
-        ['bin news --show-looooooooooooooooooooooooooooooooong',
-            'The meeting emphasized that the vaccine is related to the health of\n' +
-            'the people and to public health and national security. This problem\n' +
-            'vaccine case is a serious violation of the law and the production of\n' +
-            'vaccines by a vaccine producer who is profitable, violates national\n' +
-            'drug standards and quality control regulations, fabricates false\n' +
-            'production inspection records, dereliction of duty of local government\n' +
-            'and regulatory authorities, and individual staff misconduct. In major\n' +
-            'cases, the circumstances are serious and the nature is bad, causing\n' +
-            'serious adverse effects. It not only exposes many loopholes such as\n' +
-            'inadequate supervision, but also reflects institutional defects in the\n' +
-            'production and use of vaccines.'],
-        ['bin --version', '显示版本号会议强调，疫苗关系人民群众健康，关系公共卫生安全和国家安全。\n' +
+        'bin [options]'
+    )
+    .usage(
+        'bin <comm' + '' + 'and> [options] [looooooooooooooooooooooooooong]'
+    )
+    .usage(
+        'bin news --show-looooooooooooooooooooooooooooooooong',
+        'The meeting emphasized that the vaccine is related to the health of\n' +
+        'the people and to public health and national security. This problem\n' +
+        'vaccine case is a serious violation of the law and the production of\n' +
+        'vaccines by a vaccine producer who is profitable, violates national\n' +
+        'drug standards and quality control regulations, fabricates false\n' +
+        'production inspection records, dereliction of duty of local government\n' +
+        'and regulatory authorities, and individual staff misconduct. In major\n' +
+        'cases, the circumstances are serious and the nature is bad, causing\n' +
+        'serious adverse effects. It not only exposes many loopholes such as\n' +
+        'inadequate supervision, but also reflects institutional defects in the\n' +
+        'production and use of vaccines.'
+    )
+    .usage(
+        'bin --version',
+        '显示版本号会议强调，疫苗关系人民群众健康，关系公共卫生安全和国家安全。\n' +
         '这起问题疫苗案件是一起疫苗生产者逐利枉法、违反国家药品标准和药品生产质量管理规范、\n' +
         '编造虚假生产检验记录、地方政府和监管部门失职失察、个别工作人员渎职的严重\n' +
         '违规违法生产疫苗的重大案件，情节严重，性质恶劣，造成严重不良影响，\n' +
         '既暴露出监管不到位等诸多漏洞，\n' +
-        '也反映出疫苗生产流通使用等方面存在的制度缺陷。']
+        '也反映出疫苗生产流通使用等方面存在的制度缺陷。'
     )
     .option('news', {
         alias: 'n',
@@ -58,7 +65,11 @@ cli
     .command('init', '初始化一个配置文件')
     .helper()
     .usage(
-        'bin init --config [options]'
+        'bin init --config config-file'
+    )
+    .usage(
+        'bin init --config config-file --ssl',
+        '使用加密方式初始一个配置文件'
     )
     .option('config', {
         alias: ['c', 'C', 'ccccccccvvvvvvvvvvvvv'],
@@ -69,6 +80,9 @@ cli
             'General Secretary Xi Jinping has attached great importance to it and made many\n' +
             'important instructions. He has called for the immediate investigation of the truth,\n' +
             'serious accountability'
+    })
+    .option('xyz', {
+        type: 'string'
     })
     .option('ssl', {
         alias: 's',
