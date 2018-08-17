@@ -354,11 +354,11 @@ var CLI = Class.extend({
         var commander = this[_commanderMap][command] || this[_globalCommander];
         var commanders = commander === this[_globalCommander] ? this[_commanderList] : [commander];
         var padding = 2;
-
+        var titleColors = ['inverse'];
         this[_slogn]();
 
         // print usage
-        console.log(console.pretty('Usage:', ['grey', 'underline']));
+        console.log(console.pretty('Usage:', titleColors));
         var usagePrints = [];
         array.each(commanders, function (index, commander) {
             array.each(commander.usageList, function (index, usage) {
@@ -369,7 +369,7 @@ var CLI = Class.extend({
 
         // print commands
         console.log();
-        console.log(console.pretty('Commands:', ['grey', 'underline']));
+        console.log(console.pretty('Commands:', titleColors));
         var commandPrints = [];
         array.each(commanders, function (index, commander) {
             if (commander.global) {
@@ -382,7 +382,7 @@ var CLI = Class.extend({
 
         // print options
         console.log();
-        console.log(console.pretty('Options:', ['grey', 'underline']));
+        console.log(console.pretty('Options:', titleColors));
         var optionsPrints = [];
         object.each(commander.options, function (key, option) {
             optionsPrints.push([option._keys.join(', '), option.describe || '']);
