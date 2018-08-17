@@ -358,18 +358,19 @@ var CLI = Class.extend({
         this[_slogn]();
 
         // print usage
-        console.log(console.pretty('Usage:', titleColors));
         var usagePrints = [];
         array.each(commanders, function (index, commander) {
             array.each(commander.usageList, function (index, usage) {
                 usagePrints.push([usage.example, usage.describe]);
             });
         });
-        this[_print](padding, usagePrints);
+        if (usagePrints.length) {
+            console.log(console.pretty('Usage:', titleColors));
+            this[_print](padding, usagePrints);
+            console.log();
+        }
 
         // print commands
-        console.log();
-        console.log(console.pretty('Commands:', titleColors));
         var commandPrints = [];
         array.each(commanders, function (index, commander) {
             if (commander.global) {
@@ -378,16 +379,21 @@ var CLI = Class.extend({
 
             commandPrints.push([commander.command, commander.describe]);
         });
-        this[_print](padding, commandPrints);
+        if (commandPrints.length) {
+            console.log(console.pretty('Commands:', titleColors));
+            this[_print](padding, commandPrints);
+            console.log();
+        }
 
         // print options
-        console.log();
-        console.log(console.pretty('Options:', titleColors));
         var optionsPrints = [];
         object.each(commander.options, function (key, option) {
             optionsPrints.push([option._keys.join(', '), option.describe || '']);
         });
-        this[_print](padding, optionsPrints);
+        if (optionsPrints.length) {
+            console.log(console.pretty('Options:', titleColors));
+            this[_print](padding, optionsPrints);
+        }
     },
 
     /**
