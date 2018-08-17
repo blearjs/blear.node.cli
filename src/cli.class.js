@@ -28,13 +28,16 @@ var CLI = Class.extend({
     constructor: function () {
         this[_bin] = null;
         this[_banner] = null;
-        this[_globalCommander] = {};
-        this[_commanders] = {};
+        this[_globalCommander] = {
+            global: true
+        };
+        this[_commanderMap] = {};
+        this[_commanderList] = [];
     },
 
     /**
      * 配置 banner 信息
-     * @param banner
+     * @param banner {string}
      * @returns {CLI}
      */
     banner: function (banner) {
@@ -45,13 +48,13 @@ var CLI = Class.extend({
     /**
      * 新增命令
      * @param [command] {string} 命令，如果为空，则为全局命令
-     * @param [desc] {string} 描述
+     * @param [describe] {string} 描述
      * @returns {CLI}
      */
-    command: function (command, desc) {
+    command: function (command, describe) {
         if (command) {
             this[_currentCommander] = {};
-            this[_commanders][command] = this[_currentCommander];
+            this[_commanderMap][command] = this[_currentCommander];
         } else {
             this[_currentCommander] = this[_globalCommander];
         }
@@ -59,14 +62,16 @@ var CLI = Class.extend({
         this[_currentOptions] = {};
         this[_currentCommander].command = command;
         this[_currentCommander].action = noop;
-        this[_currentCommander].desc = desc || '';
+        this[_currentCommander].describe = describe || '';
+        this[_currentCommander].usageList = [];
         this[_currentCommander].options = this[_currentOptions];
+        this[_commanderList].push(this[_currentCommander]);
         return this;
     },
 
     /**
      * 版本配置
-     * @param version
+     * @param version {string|function} 版本号或版本号生产函数
      * @returns {CLI}
      */
     version: function (version) {
@@ -79,7 +84,7 @@ var CLI = Class.extend({
 
         return this.option('version', {
             alias: ['v', 'V'],
-            desc: 'output the version number',
+            describe: 'output the version number',
             action: ver
         });
     },
@@ -91,32 +96,48 @@ var CLI = Class.extend({
     helper: function () {
         return this.option('help', {
             alias: ['h', 'H'],
-            desc: 'output usage information',
+            describe: 'output usage information',
             action: this.help
         });
     },
 
     /**
-     * 配置参数
-     * @param key
-     * @param [desc]
-     * @param [desc.alias]
-     * @param [desc.default]
-     * @param [desc.type]
-     * @param [desc.transform]
-     * @param [desc.desc]
-     * @param [desc.action]
+     * 添加用法
+     * @param usage {string|array<string, string>}
      * @returns {CLI}
      */
-    option: function (key, desc) {
-        desc = desc || {};
-        this[_currentOptions][key] = desc;
-        desc.alias = typeis.Array(desc.alias) ? desc.alias : [desc.alias];
-        desc.keys = [key].concat(desc.alias);
-        desc._keys = ['--' + key].concat(desc.alias.map(function (key) {
+    usage: function (usage/*...*/) {
+        this[_currentCommander].usageList = array.map(access.args(arguments), function (item) {
+            if (typeis.String(item)) {
+                return [item, ''];
+            }
+
+            return item;
+        });
+        return this;
+    },
+
+    /**
+     * 配置参数
+     * @param key
+     * @param [detail]
+     * @param [detail.alias]
+     * @param [detail.default]
+     * @param [detail.type]
+     * @param [detail.transform]
+     * @param [detail.describe]
+     * @param [detail.action]
+     * @returns {CLI}
+     */
+    option: function (key, detail) {
+        detail = detail || {};
+        this[_currentOptions][key] = detail;
+        detail.alias = typeis.Array(detail.alias) ? detail.alias : [detail.alias];
+        detail.keys = [key].concat(detail.alias);
+        detail._keys = ['--' + key].concat(detail.alias.map(function (key) {
             return '-' + key;
         }));
-        desc.transform = typeis.Function(desc.transform) ? desc.transform : function (val) {
+        detail.transform = typeis.Function(detail.transform) ? detail.transform : function (val) {
             return val;
         };
         return this;
@@ -176,7 +197,7 @@ var CLI = Class.extend({
      * @returns {*}
      */
     exec: function (command) {
-        var commander = this[_commanders][command] || this[_globalCommander];
+        var commander = this[_commanderMap][command] || this[_globalCommander];
         var options = {};
         var helpOption = commander.options.help;
         var versionOPtion = commander.options.version;
@@ -192,28 +213,28 @@ var CLI = Class.extend({
 
         delete commander.options.help;
         delete commander.options.version;
-        object.each(commander.options, function (key, desc) {
+        object.each(commander.options, function (key, detail) {
             var val = null;
 
-            array.each(desc.keys, function (index, k) {
+            array.each(detail.keys, function (index, k) {
                 var v = the[_argv][k];
 
                 if (!typeis.Boolean(v) && !typeis.Undefined(v)) {
                     v = String(v);
                 }
 
-                if (desc.type === 'boolean' && !typeis.Undefined(v)) {
+                if (detail.type === 'boolean' && !typeis.Undefined(v)) {
                     v = Boolean(v);
                 }
 
-                if (typeis(v) === desc.type) {
+                if (typeis(v) === detail.type) {
                     val = v;
                     return false;
                 }
             });
 
-            val = val || desc.default;
-            options[key] = desc.transform(val, options);
+            val = val || detail.default;
+            options[key] = detail.transform(val, options);
         });
 
         commander.action.call(this, options);
@@ -224,35 +245,46 @@ var CLI = Class.extend({
      * @param command
      */
     help: function (command) {
-        var commander = this[_commanders][command] || this[_globalCommander];
-        var commanders = commander === this[_globalCommander] ? this[_commanders] : [commander];
+        var commander = this[_commanderMap][command] || this[_globalCommander];
+        var commanders = commander === this[_globalCommander] ? this[_commanderList] : [commander];
+        var padding = 2;
+        var indent = string.repeat(' ', padding);
 
         if (this[_banner]) {
             console.log(this[_banner]);
         }
 
         // print usage
-        console.log(console.pretty('Usage:', ['bold', 'underline']));
-        console.log('  ', this[_bin], '[options]');
-        console.log('  ', this[_bin], '<command> [options]');
+        console.log(console.pretty('Usage:', ['grey', 'underline']));
+        var usagePrints = [];
+        array.each(commanders, function (index, commander) {
+            array.each(commander.usageList, function (index, usage) {
+                usagePrints.push(usage);
+            });
+        });
+        this[_print](padding, usagePrints);
 
         // print commands
         console.log();
-        console.log(console.pretty('Commands:', ['bold', 'underline']));
+        console.log(console.pretty('Commands:', ['grey', 'underline']));
         var commandPrints = [];
-        object.each(commanders, function (index, commander) {
-            commandPrints.push([commander.command, commander.desc || '']);
+        array.each(commanders, function (index, commander) {
+            if (commander.global) {
+                return;
+            }
+
+            commandPrints.push([commander.command, commander.describe || '']);
         });
-        this[_print](2, commandPrints);
+        this[_print](padding, commandPrints);
 
         // print options
         console.log();
-        console.log(console.pretty('Options:', ['bold', 'underline']));
+        console.log(console.pretty('Options:', ['grey', 'underline']));
         var optionsPrints = [];
-        object.each(commander.options, function (key, desc) {
-            optionsPrints.push([desc._keys.join(', '), desc.desc || '']);
+        object.each(commander.options, function (key, detail) {
+            optionsPrints.push([detail._keys.join(', '), detail.describe || '']);
         });
-        this[_print](2, optionsPrints);
+        this[_print](padding, optionsPrints);
     }
 });
 var sole = CLI.sole;
@@ -261,7 +293,8 @@ var _options = sole();
 var _bin = sole();
 var _banner = sole();
 var _globalCommander = sole();
-var _commanders = sole();
+var _commanderMap = sole();
+var _commanderList = sole();
 var _currentCommander = sole();
 var _currentOptions = sole();
 var _argv = sole();
@@ -291,15 +324,18 @@ prot[_print] = function (indentLength, list) {
             lines.push(
                 [
                     indent,
-                    key
+                    console.colors.bold(key)
                 ].join('')
             );
-            lines.push(indentText(valIndent, val, true));
+
+            if (val.length) {
+                lines.push(indentText(valIndent, val, true));
+            }
         } else {
             lines.push(
                 [
                     indent,
-                    string.padEnd(key, keyLength, ' '),
+                    console.colors.bold(string.padEnd(key, keyLength, ' ')),
                     space,
                     indentText(valIndent, val, false)
                 ].join('')
@@ -339,4 +375,11 @@ function indentText(indent, text, indentFirstLine) {
     });
 
     return list.join('\n');
+}
+
+function cyan(val) {
+    console.pretty(
+        val,
+        [console.colors.cyan]
+    );
 }

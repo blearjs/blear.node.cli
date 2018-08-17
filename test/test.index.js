@@ -12,7 +12,6 @@ var cli = require('../src/index.js');
 
 describe('测试文件', function () {
     it('base', function () {
-        cli();
     });
 });
 
