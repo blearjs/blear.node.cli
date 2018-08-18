@@ -315,18 +315,18 @@ var CLI = Class.extend({
         });
         var command = this[_argv]._.shift();
         var method = this[_argv]._.shift();
-        var parameters = this[_argv];
-        this.exec(command, method, parameters);
+        var params = this[_argv];
+        this.exec(command, method, params);
     },
 
     /**
      * 执行命令
      * @param command {string}
      * @param [method] {string}
-     * @param [parameters] {array}
+     * @param [params] {array}
      * @returns {*}
      */
-    exec: function (command, method, parameters) {
+    exec: function (command, method, params) {
         var commander = command ? this[_commanderMap][command] || this[_globalCommander] : this[_globalCommander];
         var args = {};
         var commanderOptions = commander.options;
@@ -341,12 +341,12 @@ var CLI = Class.extend({
 
         if (this[_argv].help && helpOption) {
             this[_slogn]();
-            return helpOption.action.call(this, command, method, parameters);
+            return helpOption.action.call(this, command, method, params);
         }
 
         if (this[_argv].version && versionOPtion) {
             this[_slogn]();
-            return versionOPtion.action.call(this, command, method, parameters);
+            return versionOPtion.action.call(this, command, method, params);
         }
 
         delete commanderOptions.help;
@@ -416,28 +416,33 @@ var CLI = Class.extend({
             return false;
         }
 
-        this[_slogn]();
+        if (method) {
+            var methodAction = commander.methodActions[method];
+
+            if (typeis.Function(methodAction)) {
+                this[_slogn]();
+                methodAction.call(this, args, params);
+                return;
+            }
+        }
 
         var action = commander.action;
-
-        if (method) {
-            action = commander.methodActions[method] || action;
-        }
 
         if (!typeis.Function(action)) {
             throw new Error('`action` of the `' + command + '` command is not specified');
         }
 
-        action.call(this, args, method, parameters);
+        this[_slogn]();
+        action.call(this, args, method, params);
     },
 
     /**
      * 打印帮助信息
      * @param command
      * @param [method]
-     * @param [parameters]
+     * @param [params]
      */
-    help: function (command, method, parameters) {
+    help: function (command, method, params) {
         var commander = this[_commanderMap][command] || this[_globalCommander];
         var commanders = commander === this[_globalCommander] ? this[_commanderList] : [commander];
         var padding = 2;
