@@ -20,9 +20,6 @@ var request = require('blear.node.request');
 var path = require('path');
 var minimist = require('minimist');
 
-var noop = function () {
-    // empty
-};
 var METHOD_OPTIONS_SUFFIX = '-options';
 var defaults = {
     /**
@@ -79,7 +76,7 @@ var CLI = Class.extend({
         }
 
         this[_currentCommander].command = command;
-        this[_currentCommander].action = noop;
+        this[_currentCommander].action = null;
         this[_currentCommander].methodActions = {};
         this[_currentCommander].error = this[_error];
         this[_currentCommander].describe = describe || '';
