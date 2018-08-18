@@ -420,6 +420,10 @@ var CLI = Class.extend({
             action = commander.methodActions[method] || action;
         }
 
+        if (!typeis.Function(action)) {
+            throw new Error('`action` of the `' + command + '` command is not specified');
+        }
+
         action.call(this, args, method);
     },
 
