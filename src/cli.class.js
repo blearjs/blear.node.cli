@@ -269,28 +269,34 @@ var CLI = Class.extend({
                 help: ['h', 'H']
             }
         });
-        this.exec(this[_argv]._[0]);
+        var command = this[_argv]._.shift();
+        var method = this[_argv]._.shift();
+        var methods = this[_argv]._;
+        this.exec(command, method, methods);
     },
 
     /**
      * 执行命令
-     * @param command
+     * @param command {string}
+     * @param [method] {string}
+     * @param [methods] {array}
      * @returns {*}
      */
-    exec: function (command) {
+    exec: function (command, method, methods) {
         var commander = command ? this[_commanderMap][command] || this[_globalCommander] : this[_globalCommander];
-        var options = {};
+        var args = {};
+        methods = methods || [];
         var helpOption = commander.options.help;
         var versionOPtion = commander.options.version;
         var the = this;
 
         if (this[_argv].help && helpOption && typeis.Function(helpOption.action)) {
-            return helpOption.action.call(this, command);
+            return helpOption.action.call(this, command, method, methods);
         }
 
         if (this[_argv].version && versionOPtion && typeis.Function(versionOPtion.action)) {
             this[_slogn]();
-            return versionOPtion.action.call(this, command);
+            return versionOPtion.action.call(this, command, method, methods);
         }
 
         delete commander.options.help;
@@ -328,7 +334,7 @@ var CLI = Class.extend({
             });
 
             val = val || option.default;
-            val = option.transform(val, options);
+            val = option.transform(val, args);
 
             if (option.type === 'string' && option.required === true && val.length === 0) {
                 broken = true;
@@ -336,7 +342,7 @@ var CLI = Class.extend({
                 return false;
             }
 
-            options[key] = val;
+            args[key] = val;
         });
 
         if (broken === true) {
@@ -344,7 +350,7 @@ var CLI = Class.extend({
         }
 
         this[_slogn]();
-        commander.action.call(this, options);
+        commander.action.call(this, args, method, methods);
     },
 
     /**

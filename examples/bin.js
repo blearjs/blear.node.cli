@@ -102,8 +102,8 @@ cli
             return val + options.config;
         }
     })
-    .action(function (options) {
-        console.log('action init', options);
+    .action(function (args, method, methods) {
+        console.log('action init', args, method, methods);
     })
     .command(require('./cmd-get'))
     .parse({
