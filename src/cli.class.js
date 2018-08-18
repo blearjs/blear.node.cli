@@ -180,6 +180,7 @@ var CLI = Class.extend({
      */
     option: function (key, option) {
         option = option || {};
+        key = string.separatorize(key);
         this[_currentOptions][key] = option;
         option.alias = typeis.Array(option.alias)
             ? option.alias
@@ -356,6 +357,7 @@ var CLI = Class.extend({
         var padding = 2;
         var titleColors = ['inverse'];
         this[_slogn]();
+        var titleLength = 12;
 
         // print usage
         var usagePrints = [];
@@ -365,7 +367,7 @@ var CLI = Class.extend({
             });
         });
         if (usagePrints.length) {
-            console.log(console.pretty('Usage:', titleColors));
+            console.log(console.pretty(string.padEnd('  Usage:', titleLength), titleColors));
             this[_print](padding, usagePrints);
             console.log();
         }
@@ -380,7 +382,7 @@ var CLI = Class.extend({
             commandPrints.push([commander.command, commander.describe]);
         });
         if (commandPrints.length) {
-            console.log(console.pretty('Commands:', titleColors));
+            console.log(console.pretty(string.padEnd('  Commands:', titleLength), titleColors));
             this[_print](padding, commandPrints);
             console.log();
         }
@@ -391,7 +393,7 @@ var CLI = Class.extend({
             optionsPrints.push([option._keys.join(', '), option.describe || '']);
         });
         if (optionsPrints.length) {
-            console.log(console.pretty('Options:', titleColors));
+            console.log(console.pretty(string.padEnd('  Options:', titleLength), titleColors));
             this[_print](padding, optionsPrints);
         }
     },

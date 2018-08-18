@@ -68,8 +68,8 @@ cli
         'bin init --config config-file --ssl',
         '使用加密方式初始一个配置文件'
     )
-    .option('config', {
-        alias: ['c', 'C', 'ccccccccvvvvvvvvvvvvv'],
+    .option('configFile', {
+        alias: ['c', 'C', 'cF'],
         type: 'string',
         required: true,
         message: '',
