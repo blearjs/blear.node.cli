@@ -315,7 +315,7 @@ var CLI = Class.extend({
         });
         var command = this[_argv]._.shift();
         var method = this[_argv]._.shift();
-        var params = this[_argv];
+        var params = this[_argv]._;
         this.exec(command, method, params);
     },
 
@@ -403,7 +403,7 @@ var CLI = Class.extend({
                     return false;
                 }
 
-                args[key] = val;
+                args[string.humprize(key)] = val;
             });
             return broken;
         };
