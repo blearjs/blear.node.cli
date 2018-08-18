@@ -108,10 +108,10 @@ cli
     //     console.log('action init', args, method);
     // })
     .command('show')
-    .helper()
     .option('url', {
         required: true
     })
+    .helper()
     .method('ad')
     .option('name', {
         required: true

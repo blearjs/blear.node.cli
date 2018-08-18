@@ -99,6 +99,7 @@ var CLI = Class.extend({
         return this.option('version', {
             alias: ['v', 'V'],
             describe: describe || 'print version information',
+            for: null,
             action: this.version
         });
     },
@@ -112,6 +113,7 @@ var CLI = Class.extend({
         return this.option('help', {
             alias: ['h', 'H'],
             describe: describe || 'print help information',
+            for: null,
             action: this.help
         });
     },
@@ -308,21 +310,32 @@ var CLI = Class.extend({
     exec: function (command, method) {
         var commander = command ? this[_commanderMap][command] || this[_globalCommander] : this[_globalCommander];
         var args = {};
-        var helpOption = commander.options.help;
-        var versionOPtion = commander.options.version;
+        var commanderOptions = commander.options;
+        var helpOption = commanderOptions.help;
+        var versionOPtion = commanderOptions.version;
         var the = this;
+        var methodOptions;
 
-        if (this[_argv].help && helpOption && typeis.Function(helpOption.action)) {
+        if (method) {
+            methodOptions = commander[method + METHOD_OPTIONS_SUFFIX];
+        }
+
+        if (this[_argv].help && helpOption) {
             return helpOption.action.call(this, command, method);
         }
 
-        if (this[_argv].version && versionOPtion && typeis.Function(versionOPtion.action)) {
-            this[_slogn]();
+        if (this[_argv].version && versionOPtion) {
             return versionOPtion.action.call(this, command, method);
         }
 
-        delete commander.options.help;
-        delete commander.options.version;
+        delete commanderOptions.help;
+        delete commanderOptions.version;
+
+        if (methodOptions) {
+            delete methodOptions.help;
+            delete methodOptions.version;
+        }
+
         var eachOptions = function (options) {
             if (!options) {
                 return false;
@@ -374,15 +387,12 @@ var CLI = Class.extend({
             return broken;
         };
 
-
-        if (eachOptions(commander.options)) {
+        if (eachOptions(commanderOptions)) {
             return false;
         }
 
-        if (method) {
-            if (eachOptions(commander[method + METHOD_OPTIONS_SUFFIX])) {
-                return false;
-            }
+        if (eachOptions(methodOptions)) {
+            return false;
         }
 
         this[_slogn]();
@@ -482,6 +492,7 @@ var CLI = Class.extend({
      * 输出版本并进行版本比较
      */
     version: function () {
+        this[_slogn]();
         console.log('local version', this[_options].package.version);
         checkVersion(this[_options].package);
     }
