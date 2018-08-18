@@ -264,8 +264,6 @@ var CLI = Class.extend({
      * @returns {CLI}
      */
     parse: function (argv, options) {
-        console.log(this[_commanderMap]);
-
         var args = access.args(arguments);
 
         switch (args.length) {
@@ -325,52 +323,66 @@ var CLI = Class.extend({
 
         delete commander.options.help;
         delete commander.options.version;
-        var broken = false;
-        object.each(commander.options, function (key, option) {
-            if (broken === true) {
+        var eachOptions = function (options) {
+            if (!options) {
                 return false;
             }
 
-            var val = null;
-
-            array.each(option.keys, function (index, k) {
-                var v = the[_argv][k];
-
-                if (v === undefined) {
-                    return;
-                }
-
-                if (option.type === 'boolean') {
-                    v = Boolean(v);
-                } else {
-                    if (v === true) {
-                        v = '';
-                    }
-
-                    v = string.ify(v);
-                }
-
-                if (typeis(v) === option.type) {
-                    key = option._keyMap[k];
-                    val = v;
+            var broken = false;
+            object.each(options, function (key, option) {
+                if (broken === true) {
                     return false;
                 }
+
+                var val = null;
+
+                array.each(option.keys, function (index, k) {
+                    var v = the[_argv][k];
+
+                    if (v === undefined) {
+                        return;
+                    }
+
+                    if (option.type === 'boolean') {
+                        v = Boolean(v);
+                    } else {
+                        if (v === true) {
+                            v = '';
+                        }
+
+                        v = string.ify(v);
+                    }
+
+                    if (typeis(v) === option.type) {
+                        key = option._keyMap[k];
+                        val = v;
+                        return false;
+                    }
+                });
+
+                val = val || option.default;
+                val = option.transform(val, args, method);
+
+                if (option.type === 'string' && option.required === true && val.length === 0) {
+                    broken = true;
+                    commander.error.call(the, key, option, args, method);
+                    return false;
+                }
+
+                args[key] = val;
             });
+            return broken;
+        };
 
-            val = val || option.default;
-            val = option.transform(val, args, method);
 
-            if (option.type === 'string' && option.required === true && val.length === 0) {
-                broken = true;
-                commander.error.call(the, key, option, args, method);
+        if (eachOptions(commander.options)) {
+            return false;
+        }
+
+        if (method) {
+            if (eachOptions(commander[method + METHOD_OPTIONS_SUFFIX])) {
                 return false;
             }
-
-            args[key] = val;
-        });
-
-        if (broken === true) {
-            return false;
         }
 
         this[_slogn]();

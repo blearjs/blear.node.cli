@@ -109,11 +109,20 @@ cli
     // })
     .command('show')
     .helper()
-    .option('url')
+    .option('url', {
+        required: true
+    })
     .method('ad')
-    .option('name')
+    .option('name', {
+        required: true
+    })
     .method('tv')
     .option('channel')
+    .action(function (args, method) {
+        console.log('命令', 'show');
+        console.log('参数', args);
+        console.log('方法', method);
+    })
     .parse({
         package: {
             bin: {
