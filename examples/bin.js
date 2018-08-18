@@ -108,6 +108,8 @@ cli
         console.log('action init', args, method, methods);
     })
     .command(require('./cmd-get'))
+    .command('show')
+    .command('show ad')
     .parse({
         package: {
             bin: {

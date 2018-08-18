@@ -65,20 +65,11 @@ var CLI = Class.extend({
 
     /**
      * 新增命令
-     * @param [command] {string|object} 命令，如果为空，则为全局命令，或命令描述
+     * @param [command] {string} 命令
      * @param [describe] {string} 描述
      * @returns {CLI}
      */
     command: function (command, describe) {
-        var detail = {};
-        var the = this;
-
-        if (typeis.Object(command)) {
-            detail = command;
-            command = detail.command;
-            describe = detail.describe;
-        }
-
         if (command) {
             this[_currentCommander] = {};
             this[_commanderMap][command] = this[_currentCommander];
@@ -94,40 +85,6 @@ var CLI = Class.extend({
         this[_currentCommander].methods = this[_currentMethods] = {};
         this[_currentCommander].options = this[_currentOptions] = {};
         this[_commanderList].push(this[_currentCommander]);
-
-        if (detail.action) {
-            this.action(detail.action);
-        }
-
-        if (detail.error) {
-            this.error(detail.error);
-        }
-
-        if (detail.versioning) {
-            this.versioning(detail.versioning === true ? '' : detail.versioning);
-        }
-
-        if (detail.helper) {
-            this.helper(detail.helper === true ? '' : detail.helper);
-        }
-
-        if (detail.usages) {
-            array.each(detail.usages, function (index, usage) {
-                the.usage(usage.example, usage.describe);
-            });
-        }
-
-        if (detail.methods) {
-            object.each(detail.methods, function (method, describe) {
-                the.method(method, describe === true ? '' : describe);
-            });
-        }
-
-        if (detail.options) {
-            object.each(detail.options, function (key, describe) {
-                the.option(key, describe);
-            });
-        }
 
         return this;
     },
