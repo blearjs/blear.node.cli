@@ -123,6 +123,14 @@ cli
         console.log('参数', args);
         console.log('方法', method);
     })
+    .action('ad', function (args) {
+        console.log('命令', 'show ad');
+        console.log('参数', args);
+    })
+    .action('tv', function (args) {
+        console.log('命令', 'show tv');
+        console.log('参数', args);
+    })
     .parse({
         package: {
             bin: {

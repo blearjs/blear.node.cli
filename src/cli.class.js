@@ -80,6 +80,7 @@ var CLI = Class.extend({
 
         this[_currentCommander].command = command;
         this[_currentCommander].action = noop;
+        this[_currentCommander].methodActions = {};
         this[_currentCommander].error = this[_error];
         this[_currentCommander].describe = describe || '';
         this[_currentCommander].usageList = [];
@@ -134,20 +135,20 @@ var CLI = Class.extend({
 
     /**
      * 添加方法
-     * @param name
+     * @param method
      * @param [describe]
      * @returns {CLI}
      */
-    method: function (name, describe) {
+    method: function (method, describe) {
         if (this[_currentCommander].global) {
-            throw new Error('cannot add methods to global commands');
+            throw new Error('cannot add method to global command');
         }
 
-        this[_currentMethods][name] = this[_currentMethod] = {
-            name: name,
+        this[_currentMethods][method] = this[_currentMethod] = {
+            method: method,
             describe: describe || ''
         };
-        this[_currentCommander][name + METHOD_OPTIONS_SUFFIX] = {};
+        this[_currentCommander][method + METHOD_OPTIONS_SUFFIX] = {};
         return this;
     },
 
@@ -205,7 +206,7 @@ var CLI = Class.extend({
 
         if (!typeis.Null(option.for) && !typeis.String(option.for)) {
             if (this[_currentMethod]) {
-                option.for = this[_currentMethod].name;
+                option.for = this[_currentMethod].method;
             } else {
                 option.for = null;
             }
@@ -219,10 +220,10 @@ var CLI = Class.extend({
             var method = this[_currentMethods][option.for];
 
             if (!method) {
-                throw new Error('the `' + option.for + '` method pointed to does not exist');
+                throw new Error('the `' + option.for + '` method does not exist');
             }
 
-            var k = method.name + METHOD_OPTIONS_SUFFIX;
+            var k = method.method + METHOD_OPTIONS_SUFFIX;
             commander[k][key] = option;
             return this;
         }
@@ -233,11 +234,29 @@ var CLI = Class.extend({
 
     /**
      * 执行动作
-     * @param action
+     * @param [method] {string} 指定方法的动作
+     * @param action {function} 动作
      * @returns {CLI}
      */
-    action: function (action) {
-        if (typeis.Function(action)) {
+    action: function (method, action) {
+        var args = access.args(arguments);
+
+        if (args.length === 1) {
+            action = args[0];
+            method = null;
+        }
+
+        if (!typeis.Function(action)) {
+            throw new Error('the `action` parameter must be a function');
+        }
+
+        if (method) {
+            if (!this[_currentMethods][method]) {
+                throw new Error('the `' + method + '` method does not exist');
+            }
+
+            this[_currentCommander].methodActions[method] = action;
+        } else {
             this[_currentCommander].action = action;
         }
 
@@ -250,10 +269,11 @@ var CLI = Class.extend({
      * @returns {CLI}
      */
     error: function (error) {
-        if (typeis.Function(error)) {
-            this[_currentCommander].error = error;
+        if (!typeis.Function(error)) {
+            throw new Error('the `error` parameter must be a function');
         }
 
+        this[_currentCommander].error = error;
         return this;
     },
 
@@ -284,7 +304,7 @@ var CLI = Class.extend({
         }
 
         if (!options.package) {
-            throw new TypeError('`package` parameter cannot be empty');
+            throw new TypeError('the `package` parameter cannot be empty');
         }
 
         this[_options] = object.assign({}, defaults, options);
@@ -396,7 +416,14 @@ var CLI = Class.extend({
         }
 
         this[_slogn]();
-        commander.action.call(this, args, method);
+
+        var action = commander.action;
+
+        if (method) {
+            action = commander.methodActions[method] || action;
+        }
+
+        action.call(this, args, method);
     },
 
     /**
@@ -458,11 +485,11 @@ var CLI = Class.extend({
         // print methods
         var methodsPrints = [];
         if (method) {
-            var methodsDetail = commander.methods[method];
-            methodsPrints.push([methodsDetail.name, methodsDetail.describe]);
+            var methodDetail = commander.methods[method];
+            methodsPrints.push([methodDetail.method, methodDetail.describe]);
         } else {
             object.each(commander.methods, function (_, detail) {
-                methodsPrints.push([detail.name, detail.describe]);
+                methodsPrints.push([detail.method, detail.describe]);
             });
         }
         if (methodsPrints.length) {
