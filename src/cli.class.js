@@ -334,7 +334,7 @@ var CLI = Class.extend({
             });
 
             val = val || option.default;
-            val = option.transform(val, args);
+            val = option.transform(val, args, method, methods);
 
             if (option.type === 'string' && option.required === true && val.length === 0) {
                 broken = true;

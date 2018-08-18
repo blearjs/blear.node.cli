@@ -98,8 +98,8 @@ cli
             '要求立即查清事实真相，严肃问责，依法从严处理，坚决守住安全底线，全力保障群众切\n' +
             '身利益和社会稳定大局。在党中央坚强领导下，国务院多次召开会议研究，派出调查组进行\n' +
             '调查，目前已基本查清案件情况和有关部门及干部履行职责情况。',
-        transform: function (val, options) {
-            return val + options.config;
+        transform: function (val, args, method, methods) {
+            return val + args.config;
         }
     })
     .action(function (args, method, methods) {

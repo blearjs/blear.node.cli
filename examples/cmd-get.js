@@ -36,8 +36,8 @@ exports.usages = [
     }
 ];
 
-exports.action = function (options) {
-    console.log('action get', options);
+exports.action = function (args) {
+    console.log('action get', args);
 };
 
 exports.error = function (key, option) {
