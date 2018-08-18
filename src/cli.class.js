@@ -338,10 +338,12 @@ var CLI = Class.extend({
         }
 
         if (this[_argv].help && helpOption) {
+            this[_slogn]();
             return helpOption.action.call(this, command, method);
         }
 
         if (this[_argv].version && versionOPtion) {
+            this[_slogn]();
             return versionOPtion.action.call(this, command, method);
         }
 
@@ -437,7 +439,6 @@ var CLI = Class.extend({
         var commanders = commander === this[_globalCommander] ? this[_commanderList] : [commander];
         var padding = 2;
         var titleColors = ['inverse'];
-        this[_slogn]();
         var titleLength = 12;
         var titlePadding = string.repeat(' ', padding);
         var buildTitle = function (list, name) {
@@ -520,7 +521,6 @@ var CLI = Class.extend({
      * 输出版本并进行版本比较
      */
     version: function () {
-        this[_slogn]();
         console.log('local version', this[_options].package.version);
         checkVersion(this[_options].package);
     }
