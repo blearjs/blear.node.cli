@@ -23,6 +23,7 @@ var minimist = require('minimist');
 var noop = function () {
     // empty
 };
+var METHOD_OPTIONS_SUFFIX = '-options';
 var defaults = {
     /**
      * 键显示的长度
@@ -131,32 +132,36 @@ var CLI = Class.extend({
 
     /**
      * 添加方法
-     * @param method
+     * @param name
      * @param [describe]
      * @returns {CLI}
      */
-    method: function (method, describe) {
+    method: function (name, describe) {
         if (this[_currentCommander].global) {
             throw new Error('cannot add methods to global commands');
         }
 
-        this[_currentMethods][method] = {
-            method: method,
+        this[_currentMethods][name] = this[_currentMethod] = {
+            name: name,
             describe: describe || ''
         };
+        this[_currentCommander][name + METHOD_OPTIONS_SUFFIX] = {};
         return this;
     },
 
     /**
      * 配置参数
      * @param key
-     * @param [option] {object | string}
-     * @param [option.alias]
-     * @param [option.default]
-     * @param [option.type]
-     * @param [option.transform]
-     * @param [option.describe]
-     * @param [option.action]
+     * @param [option] {object | string} 配置，或描述
+     * @param [option.alias] {string | array} 别名，可以是多个
+     * @param [option.default] {string} 默认值
+     * @param [option.type] {string} 类型，目前仅支持 string、Boolean
+     * @param [option.transform] {function} 转换
+     * @param [option.describe] {string} 描述
+     * @param [option.action] {function} 执行动作
+     * @param [option.required=false] {boolean} 是否必填
+     * @param [option.message] {string} 参数不符合要求时显示
+     * @param [option.for] {string} 执行具体 method，为 null 指向 command
      * @returns {CLI}
      */
     option: function (key, option) {
@@ -166,11 +171,15 @@ var CLI = Class.extend({
             };
         }
 
+        var commander = this[_currentCommander];
         option = option || {};
+
+        if (typeis.String(option.alias)) {
+            option.alias = [option.alias];
+        }
+        option.alias = option.alias || [];
+
         key = string.separatorize(key);
-        option.alias = typeis.Array(option.alias)
-            ? option.alias
-            : (option.alias ? [option.alias] : []);
         option.keys = [key].concat(option.alias);
         option._keys = ['--' + key].concat(option.alias.map(function (key) {
             return '-' + key;
@@ -179,15 +188,41 @@ var CLI = Class.extend({
             p[c] = key;
             return p;
         }, {});
-        option.transform = typeis.Function(option.transform) ? option.transform : function (val) {
-            return val;
-        };
+
+        if (!typeis.Function(option.transform)) {
+            option.transform = function (val, option, args, method) {
+                return val;
+            };
+        }
+
         option.type = option.type || 'string';
+        option.required = Boolean(option.required);
         option.message = option.message || '`' + key + '` parameter cannot be empty';
+
         option.describe = option.describe || '';
+
+        if (!typeis.Null(option.for) && !typeis.String(option.for)) {
+            if (this[_currentMethod]) {
+                option.for = this[_currentMethod].name;
+            } else {
+                option.for = null;
+            }
+        }
 
         if (typeis.Undefined(option.default)) {
             option.default = option.type === 'boolean' ? false : '';
+        }
+
+        if (option.for !== null) {
+            var method = this[_currentMethods][option.for];
+
+            if (!method) {
+                throw new Error('the `' + option.for + '` method pointed to does not exist');
+            }
+
+            var k = method.name + METHOD_OPTIONS_SUFFIX;
+            commander[k][key] = option;
+            return this;
         }
 
         this[_currentOptions][key] = option;
@@ -229,6 +264,8 @@ var CLI = Class.extend({
      * @returns {CLI}
      */
     parse: function (argv, options) {
+        console.log(this[_commanderMap]);
+
         var args = access.args(arguments);
 
         switch (args.length) {
@@ -261,32 +298,29 @@ var CLI = Class.extend({
         });
         var command = this[_argv]._.shift();
         var method = this[_argv]._.shift();
-        var methods = this[_argv]._;
-        this.exec(command, method, methods);
+        this.exec(command, method);
     },
 
     /**
      * 执行命令
      * @param command {string}
      * @param [method] {string}
-     * @param [methods] {array}
      * @returns {*}
      */
-    exec: function (command, method, methods) {
+    exec: function (command, method) {
         var commander = command ? this[_commanderMap][command] || this[_globalCommander] : this[_globalCommander];
         var args = {};
-        methods = methods || [];
         var helpOption = commander.options.help;
         var versionOPtion = commander.options.version;
         var the = this;
 
         if (this[_argv].help && helpOption && typeis.Function(helpOption.action)) {
-            return helpOption.action.call(this, command, method, methods);
+            return helpOption.action.call(this, command, method);
         }
 
         if (this[_argv].version && versionOPtion && typeis.Function(versionOPtion.action)) {
             this[_slogn]();
-            return versionOPtion.action.call(this, command, method, methods);
+            return versionOPtion.action.call(this, command, method);
         }
 
         delete commander.options.help;
@@ -324,11 +358,11 @@ var CLI = Class.extend({
             });
 
             val = val || option.default;
-            val = option.transform(val, args, method, methods);
+            val = option.transform(val, args, method);
 
             if (option.type === 'string' && option.required === true && val.length === 0) {
                 broken = true;
-                commander.error.call(the, key, option, args, method, methods);
+                commander.error.call(the, key, option, args, method);
                 return false;
             }
 
@@ -340,20 +374,36 @@ var CLI = Class.extend({
         }
 
         this[_slogn]();
-        commander.action.call(this, args, method, methods);
+        commander.action.call(this, args, method);
     },
 
     /**
      * 打印帮助信息
      * @param command
+     * @param [method]
      */
-    help: function (command) {
+    help: function (command, method) {
         var commander = this[_commanderMap][command] || this[_globalCommander];
         var commanders = commander === this[_globalCommander] ? this[_commanderList] : [commander];
         var padding = 2;
         var titleColors = ['inverse'];
         this[_slogn]();
         var titleLength = 12;
+        var titlePadding = string.repeat(' ', padding);
+        var buildTitle = function (list, name) {
+            var endding = ':';
+
+            if (list.length > 1) {
+                endding = 's:';
+            }
+
+            return console.pretty(
+                string.padEnd(
+                    titlePadding + name + endding,
+                    titleLength
+                ), titleColors
+            );
+        };
 
         // print usage
         var usagePrints = [];
@@ -363,7 +413,7 @@ var CLI = Class.extend({
             });
         });
         if (usagePrints.length) {
-            console.log(console.pretty(string.padEnd('  Usage:', titleLength), titleColors));
+            console.log(buildTitle(usagePrints, 'Usage'));
             this[_print](padding, usagePrints);
             console.log();
         }
@@ -378,18 +428,23 @@ var CLI = Class.extend({
             commandPrints.push([commander.command, commander.describe]);
         });
         if (commandPrints.length) {
-            console.log(console.pretty(string.padEnd('  Commands:', titleLength), titleColors));
+            console.log(buildTitle(commandPrints, 'Command'));
             this[_print](padding, commandPrints);
             console.log();
         }
 
         // print methods
         var methodsPrints = [];
-        object.each(commander.methods, function (method, detail) {
-            methodsPrints.push([detail.method, detail.describe]);
-        });
+        if (method) {
+            var methodsDetail = commander.methods[method];
+            methodsPrints.push([methodsDetail.name, methodsDetail.describe]);
+        } else {
+            object.each(commander.methods, function (_, detail) {
+                methodsPrints.push([detail.name, detail.describe]);
+            });
+        }
         if (methodsPrints.length) {
-            console.log(console.pretty(string.padEnd('  Methods:', titleLength), titleColors));
+            console.log(buildTitle(methodsPrints, 'Method'));
             this[_print](padding, methodsPrints);
             console.log();
         }
@@ -399,8 +454,14 @@ var CLI = Class.extend({
         object.each(commander.options, function (key, option) {
             optionsPrints.push([option._keys.join(', '), option.describe]);
         });
+        if (method) {
+            var methodOptions = commander[method + METHOD_OPTIONS_SUFFIX];
+            object.each(methodOptions, function (key, option) {
+                optionsPrints.push([option._keys.join(', '), option.describe]);
+            });
+        }
         if (optionsPrints.length) {
-            console.log(console.pretty(string.padEnd('  Options:', titleLength), titleColors));
+            console.log(buildTitle(optionsPrints, 'Option'));
             this[_print](padding, optionsPrints);
         }
     },
@@ -422,6 +483,7 @@ var _globalCommander = sole();
 var _commanderMap = sole();
 var _commanderList = sole();
 var _currentCommander = sole();
+var _currentMethod = sole();
 var _currentMethods = sole();
 var _currentOptions = sole();
 var _argv = sole();
