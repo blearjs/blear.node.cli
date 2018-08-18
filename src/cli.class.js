@@ -315,16 +315,18 @@ var CLI = Class.extend({
         });
         var command = this[_argv]._.shift();
         var method = this[_argv]._.shift();
-        this.exec(command, method);
+        var parameters = this[_argv];
+        this.exec(command, method, parameters);
     },
 
     /**
      * 执行命令
      * @param command {string}
      * @param [method] {string}
+     * @param [parameters] {array}
      * @returns {*}
      */
-    exec: function (command, method) {
+    exec: function (command, method, parameters) {
         var commander = command ? this[_commanderMap][command] || this[_globalCommander] : this[_globalCommander];
         var args = {};
         var commanderOptions = commander.options;
@@ -339,12 +341,12 @@ var CLI = Class.extend({
 
         if (this[_argv].help && helpOption) {
             this[_slogn]();
-            return helpOption.action.call(this, command, method);
+            return helpOption.action.call(this, command, method, parameters);
         }
 
         if (this[_argv].version && versionOPtion) {
             this[_slogn]();
-            return versionOPtion.action.call(this, command, method);
+            return versionOPtion.action.call(this, command, method, parameters);
         }
 
         delete commanderOptions.help;
@@ -426,15 +428,16 @@ var CLI = Class.extend({
             throw new Error('`action` of the `' + command + '` command is not specified');
         }
 
-        action.call(this, args, method);
+        action.call(this, args, method, parameters);
     },
 
     /**
      * 打印帮助信息
      * @param command
      * @param [method]
+     * @param [parameters]
      */
-    help: function (command, method) {
+    help: function (command, method, parameters) {
         var commander = this[_commanderMap][command] || this[_globalCommander];
         var commanders = commander === this[_globalCommander] ? this[_commanderList] : [commander];
         var padding = 2;
