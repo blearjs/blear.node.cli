@@ -26,6 +26,11 @@ exports.options = {
     }
 };
 
+exports.methods = {
+    op: '呵呵',
+    dp: true
+};
+
 exports.usages = [
     {
         example: 'bin get'
@@ -36,14 +41,16 @@ exports.usages = [
     }
 ];
 
-exports.action = function (args) {
-    console.log('action get', args);
+exports.action = function (args, method, methods) {
+    console.log('action get', args, method, methods);
 };
 
-exports.error = function (key, option) {
+exports.error = function (key, option, args, method, methods) {
     console.log('出错啦，呵呵');
     console.log('字段', key);
-    console.log('参数', option);
+    console.log('配置', option);
+    console.log('参数', args);
+    console.log('方法', method);
 };
 
 

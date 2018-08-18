@@ -86,13 +86,13 @@ var CLI = Class.extend({
             this[_currentCommander] = this[_globalCommander];
         }
 
-        this[_currentOptions] = {};
         this[_currentCommander].command = command;
         this[_currentCommander].action = noop;
         this[_currentCommander].error = this[_error];
         this[_currentCommander].describe = describe || '';
         this[_currentCommander].usageList = [];
-        this[_currentCommander].options = this[_currentOptions];
+        this[_currentCommander].methods = this[_currentMethods] = {};
+        this[_currentCommander].options = this[_currentOptions] = {};
         this[_commanderList].push(this[_currentCommander]);
 
         if (detail.action) {
@@ -111,15 +111,21 @@ var CLI = Class.extend({
             this.helper(detail.helper === true ? '' : detail.helper);
         }
 
-        if (detail.options) {
-            object.each(detail.options, function (key, describe) {
-                the.option(key, describe);
-            });
-        }
-
         if (detail.usages) {
             array.each(detail.usages, function (index, usage) {
                 the.usage(usage.example, usage.describe);
+            });
+        }
+
+        if (detail.methods) {
+            object.each(detail.methods, function (method, describe) {
+                the.method(method, describe === true ? '' : describe);
+            });
+        }
+
+        if (detail.options) {
+            object.each(detail.options, function (key, describe) {
+                the.option(key, describe);
             });
         }
 
@@ -167,9 +173,27 @@ var CLI = Class.extend({
     },
 
     /**
+     * 添加方法
+     * @param method
+     * @param [describe]
+     * @returns {CLI}
+     */
+    method: function (method, describe) {
+        if (this[_currentCommander].global) {
+            throw new Error('cannot add methods to global commands');
+        }
+
+        this[_currentMethods][method] = {
+            method: method,
+            describe: describe || ''
+        };
+        return this;
+    },
+
+    /**
      * 配置参数
      * @param key
-     * @param [option]
+     * @param [option] {object | string}
      * @param [option.alias]
      * @param [option.default]
      * @param [option.type]
@@ -179,9 +203,14 @@ var CLI = Class.extend({
      * @returns {CLI}
      */
     option: function (key, option) {
+        if (typeis.String(option)) {
+            option = {
+                describe: option
+            };
+        }
+
         option = option || {};
         key = string.separatorize(key);
-        this[_currentOptions][key] = option;
         option.alias = typeis.Array(option.alias)
             ? option.alias
             : (option.alias ? [option.alias] : []);
@@ -198,9 +227,13 @@ var CLI = Class.extend({
         };
         option.type = option.type || 'string';
         option.message = option.message || '`' + key + '` parameter cannot be empty';
+        option.describe = option.describe || '';
+
         if (typeis.Undefined(option.default)) {
             option.default = option.type === 'boolean' ? false : '';
         }
+
+        this[_currentOptions][key] = option;
         return this;
     },
 
@@ -338,7 +371,7 @@ var CLI = Class.extend({
 
             if (option.type === 'string' && option.required === true && val.length === 0) {
                 broken = true;
-                commander.error.call(the, key, option);
+                commander.error.call(the, key, option, args, method, methods);
                 return false;
             }
 
@@ -393,10 +426,21 @@ var CLI = Class.extend({
             console.log();
         }
 
+        // print methods
+        var methodsPrints = [];
+        object.each(commander.methods, function (method, detail) {
+            methodsPrints.push([detail.method, detail.describe]);
+        });
+        if (methodsPrints.length) {
+            console.log(console.pretty(string.padEnd('  Methods:', titleLength), titleColors));
+            this[_print](padding, methodsPrints);
+            console.log();
+        }
+
         // print options
         var optionsPrints = [];
         object.each(commander.options, function (key, option) {
-            optionsPrints.push([option._keys.join(', '), option.describe || '']);
+            optionsPrints.push([option._keys.join(', '), option.describe]);
         });
         if (optionsPrints.length) {
             console.log(console.pretty(string.padEnd('  Options:', titleLength), titleColors));
@@ -421,6 +465,7 @@ var _globalCommander = sole();
 var _commanderMap = sole();
 var _commanderList = sole();
 var _currentCommander = sole();
+var _currentMethods = sole();
 var _currentOptions = sole();
 var _argv = sole();
 var _slogn = sole();
