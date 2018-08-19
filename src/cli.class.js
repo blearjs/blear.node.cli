@@ -20,7 +20,6 @@ var request = require('blear.node.request');
 var path = require('path');
 var minimist = require('minimist');
 
-var METHOD_OPTIONS_SUFFIX = '-options';
 var defaults = {
     /**
      * 键显示的长度
@@ -88,7 +87,7 @@ var CLI = Class.extend({
         this[_currentCommander].methodOptionsMap = {};
         this[_currentCommander].methodOptionsAliasesMap = {};
         this[_currentCommander].methodActionsMap = {};
-        this[_currentCommander].methods = this[_currentMethods] = {};
+        this[_currentCommander].methodsMap = this[_currentMethods] = {};
         this[_currentMethod] = null;
         this[_commanderList].push(this[_currentCommander]);
 
@@ -152,7 +151,7 @@ var CLI = Class.extend({
             method: method,
             describe: describe || ''
         };
-        this[_currentCommander][method + METHOD_OPTIONS_SUFFIX] = {};
+        this[_currentCommander].methodOptionsMap[method] = {};
         return this;
     },
 
@@ -226,14 +225,12 @@ var CLI = Class.extend({
                 throw new Error('the `' + option.for + '` method does not exist');
             }
 
-            var k = method.method + METHOD_OPTIONS_SUFFIX;
-
-            if (commander[k][key]) {
+            if (commander.methodOptionsMap[method.method][key]) {
                 throw new Error('the `option` of the `' + method.method + '` method already exists');
             }
 
             // add option
-            commander[k][key] = option;
+            commander.methodOptionsMap[method.method][key] = option;
             return this;
         }
 
@@ -357,7 +354,7 @@ var CLI = Class.extend({
         var methodOptions;
 
         if (method) {
-            methodOptions = commander[method + METHOD_OPTIONS_SUFFIX];
+            methodOptions = commander.methodOptionsMap[method];
         }
 
         if (this[_argv].help && helpOption) {
@@ -511,7 +508,7 @@ var CLI = Class.extend({
         var methodsPrints = [];
         var methodDetail = null;
         if (method) {
-            methodDetail = commander.methods[method];
+            methodDetail = commander.methodsMap[method];
 
             if (methodDetail) {
                 methodsPrints.push([methodDetail.method, methodDetail.describe]);
@@ -519,7 +516,7 @@ var CLI = Class.extend({
         }
 
         if (!methodDetail) {
-            object.each(commander.methods, function (_, detail) {
+            object.each(commander.methodsMap, function (_, detail) {
                 methodsPrints.push([detail.method, detail.describe]);
             });
         }
@@ -536,7 +533,7 @@ var CLI = Class.extend({
             optionsPrints.push([option._keys.join(', '), option.describe]);
         });
         if (method) {
-            var methodOptions = commander[method + METHOD_OPTIONS_SUFFIX];
+            var methodOptions = commander.methodOptionsMap[method];
             object.each(methodOptions, function (key, option) {
                 optionsPrints.push([option._keys.join(', '), option.describe]);
             });
