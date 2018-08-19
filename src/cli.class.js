@@ -76,15 +76,19 @@ var CLI = Class.extend({
         }
 
         this[_currentCommander].command = command;
-        this[_currentCommander].action = function () {
+        this[_currentCommander].commandOptions = this[_currentOptions] = {};
+        this[_currentCommander].commandOptionsAliases = {};
+        this[_currentCommander].commandAction = function () {
             // ignore
         };
-        this[_currentCommander].methodActions = {};
-        this[_currentCommander].error = this[_error];
-        this[_currentCommander].describe = describe || '';
-        this[_currentCommander].usageList = [];
+        this[_currentCommander].commandError = this[_error];
+        this[_currentCommander].commandDescribe = describe || '';
+        this[_currentCommander].commandUsageList = [];
+
+        this[_currentCommander].methodOptionsMap = {};
+        this[_currentCommander].methodOptionsAliasesMap = {};
+        this[_currentCommander].methodActionsMap = {};
         this[_currentCommander].methods = this[_currentMethods] = {};
-        this[_currentCommander].options = this[_currentOptions] = {};
         this[_currentMethod] = null;
         this[_commanderList].push(this[_currentCommander]);
 
@@ -126,7 +130,7 @@ var CLI = Class.extend({
      * @returns {CLI}
      */
     usage: function (example, describe) {
-        this[_currentCommander].usageList.push({
+        this[_currentCommander].commandUsageList.push({
             example: example,
             describe: describe || ''
         });
@@ -223,10 +227,25 @@ var CLI = Class.extend({
             }
 
             var k = method.method + METHOD_OPTIONS_SUFFIX;
+
+            if (commander[k][key]) {
+                throw new Error('the `option` of the `' + method.method + '` method already exists');
+            }
+
+            // add option
             commander[k][key] = option;
             return this;
         }
 
+        if (this[_currentOptions][key]) {
+            throw new Error('the `option` of the `' + commander.command + '` command already exists');
+        }
+
+        array.each(option.alias, function (index, alias) {
+
+        });
+
+        // add option
         this[_currentOptions][key] = option;
         return this;
     },
@@ -254,9 +273,9 @@ var CLI = Class.extend({
                 throw new Error('the `' + method + '` method does not exist');
             }
 
-            this[_currentCommander].methodActions[method] = action;
+            this[_currentCommander].methodActionsMap[method] = action;
         } else {
-            this[_currentCommander].action = action;
+            this[_currentCommander].commandAction = action;
         }
 
         return this;
@@ -272,7 +291,7 @@ var CLI = Class.extend({
             throw new Error('the `error` parameter must be a function');
         }
 
-        this[_currentCommander].error = error;
+        this[_currentCommander].commandError = error;
         return this;
     },
 
@@ -331,7 +350,7 @@ var CLI = Class.extend({
     exec: function (command, method, params) {
         var commander = command ? this[_commanderMap][command] || this[_globalCommander] : this[_globalCommander];
         var args = {};
-        var commanderOptions = commander.options;
+        var commanderOptions = commander.commandOptions;
         var helpOption = commanderOptions.help;
         var versionOPtion = commanderOptions.version;
         var the = this;
@@ -343,12 +362,12 @@ var CLI = Class.extend({
 
         if (this[_argv].help && helpOption) {
             this[_slogan]();
-            return helpOption.action.call(this, command, method, params);
+            return helpOption.commandAction.call(this, command, method, params);
         }
 
         if (this[_argv].version && versionOPtion) {
             this[_slogan]();
-            return versionOPtion.action.call(this, command, method, params);
+            return versionOPtion.commandAction.call(this, command, method, params);
         }
 
         delete commanderOptions.help;
@@ -401,7 +420,7 @@ var CLI = Class.extend({
 
                 if (option.type === 'string' && option.required === true && val.length === 0) {
                     broken = true;
-                    commander.error.call(the, key, option, args, method);
+                    commander.commandError.call(the, key, option, args, method);
                     return false;
                 }
 
@@ -419,7 +438,7 @@ var CLI = Class.extend({
         }
 
         if (method) {
-            var methodAction = commander.methodActions[method];
+            var methodAction = commander.methodActionsMap[method];
 
             if (typeis.Function(methodAction)) {
                 this[_slogan]();
@@ -429,7 +448,7 @@ var CLI = Class.extend({
         }
 
         this[_slogan]();
-        commander.action.call(this, args, method, params);
+        commander.commandAction.call(this, args, method, params);
     },
 
     /**
@@ -463,7 +482,7 @@ var CLI = Class.extend({
         // print usage
         var usagePrints = [];
         array.each(commanders, function (index, commander) {
-            array.each(commander.usageList, function (index, usage) {
+            array.each(commander.commandUsageList, function (index, usage) {
                 usagePrints.push([usage.example, usage.describe]);
             });
         });
@@ -480,7 +499,7 @@ var CLI = Class.extend({
                 return;
             }
 
-            commandPrints.push([commander.command, commander.describe]);
+            commandPrints.push([commander.command, commander.commandDescribe]);
         });
         if (commandPrints.length) {
             console.log(buildTitle(commandPrints, 'Command'));
@@ -513,7 +532,7 @@ var CLI = Class.extend({
 
         // print options
         var optionsPrints = [];
-        object.each(commander.options, function (key, option) {
+        object.each(commander.commandOptions, function (key, option) {
             optionsPrints.push([option._keys.join(', '), option.describe]);
         });
         if (method) {
@@ -539,6 +558,7 @@ var CLI = Class.extend({
 var sole = CLI.sole;
 var prot = CLI.prototype;
 var _options = sole();
+var _aliasKey = sole();
 var _bin = sole();
 var _banner = sole();
 var _globalCommander = sole();
