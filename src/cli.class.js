@@ -362,12 +362,12 @@ var CLI = Class.extend({
 
         if (this[_argv].help && helpOption) {
             this[_slogan]();
-            return helpOption.commandAction.call(this, command, method, params);
+            return helpOption.action.call(this, command, method, params);
         }
 
         if (this[_argv].version && versionOPtion) {
             this[_slogan]();
-            return versionOPtion.commandAction.call(this, command, method, params);
+            return versionOPtion.action.call(this, command, method, params);
         }
 
         delete commanderOptions.help;
