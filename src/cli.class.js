@@ -76,7 +76,9 @@ var CLI = Class.extend({
         }
 
         this[_currentCommander].command = command;
-        this[_currentCommander].action = null;
+        this[_currentCommander].action = function () {
+            // ignore
+        };
         this[_currentCommander].methodActions = {};
         this[_currentCommander].error = this[_error];
         this[_currentCommander].describe = describe || '';
@@ -340,12 +342,12 @@ var CLI = Class.extend({
         }
 
         if (this[_argv].help && helpOption) {
-            this[_slogn]();
+            this[_slogan]();
             return helpOption.action.call(this, command, method, params);
         }
 
         if (this[_argv].version && versionOPtion) {
-            this[_slogn]();
+            this[_slogan]();
             return versionOPtion.action.call(this, command, method, params);
         }
 
@@ -420,20 +422,14 @@ var CLI = Class.extend({
             var methodAction = commander.methodActions[method];
 
             if (typeis.Function(methodAction)) {
-                this[_slogn]();
+                this[_slogan]();
                 methodAction.call(this, args, params);
                 return;
             }
         }
 
-        var action = commander.action;
-
-        if (!typeis.Function(action)) {
-            throw new Error('`action` of the `' + command + '` command is not specified');
-        }
-
-        this[_slogn]();
-        action.call(this, args, method, params);
+        this[_slogan]();
+        commander.action.call(this, args, method, params);
     },
 
     /**
@@ -494,14 +490,21 @@ var CLI = Class.extend({
 
         // print methods
         var methodsPrints = [];
+        var methodDetail = null;
         if (method) {
-            var methodDetail = commander.methods[method];
-            methodsPrints.push([methodDetail.method, methodDetail.describe]);
-        } else {
+            methodDetail = commander.methods[method];
+
+            if (methodDetail) {
+                methodsPrints.push([methodDetail.method, methodDetail.describe]);
+            }
+        }
+
+        if (!methodDetail) {
             object.each(commander.methods, function (_, detail) {
                 methodsPrints.push([detail.method, detail.describe]);
             });
         }
+
         if (methodsPrints.length) {
             console.log(buildTitle(methodsPrints, 'Method'));
             this[_print](padding, methodsPrints);
@@ -546,11 +549,11 @@ var _currentMethod = sole();
 var _currentMethods = sole();
 var _currentOptions = sole();
 var _argv = sole();
-var _slogn = sole();
+var _slogan = sole();
 var _print = sole();
 var _error = sole();
 
-prot[_slogn] = function () {
+prot[_slogan] = function () {
     if (this[_banner]) {
         console.log(this[_banner]);
     }
@@ -608,7 +611,7 @@ prot[_print] = function (indentLength, list) {
  * @param option
  */
 prot[_error] = function (key, option) {
-    this[_slogn]();
+    this[_slogan]();
     console.error(option.message);
 };
 
