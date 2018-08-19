@@ -43,8 +43,8 @@ var CLI = Class.extend({
     constructor: function () {
         this[_bin] = null;
         this[_banner] = null;
-        this[_globalCommander] = {
-            global: true
+        this[_rootCommander] = {
+            root: true
         };
         this[_commanderMap] = {};
         this[_commanderList] = [];
@@ -71,7 +71,7 @@ var CLI = Class.extend({
             this[_currentCommander] = {};
             this[_commanderMap][command] = this[_currentCommander];
         } else {
-            this[_currentCommander] = this[_globalCommander];
+            this[_currentCommander] = this[_rootCommander];
         }
 
         this[_currentCommander].command = command;
@@ -143,8 +143,8 @@ var CLI = Class.extend({
      * @returns {CLI}
      */
     method: function (method, describe) {
-        if (this[_currentCommander].global) {
-            throw new Error('cannot add method to global command');
+        if (this[_currentCommander].root) {
+            throw new Error('cannot add method to root command');
         }
 
         this[_currentMethodsMap][method] = this[_currentMethod] = {
@@ -286,7 +286,7 @@ var CLI = Class.extend({
      * @returns {*}
      */
     exec: function (command, method, params) {
-        var commander = command ? this[_commanderMap][command] || this[_globalCommander] : this[_globalCommander];
+        var commander = command ? this[_commanderMap][command] || this[_rootCommander] : this[_rootCommander];
         var args = {};
         var commanderOptions = commander.commandOptions;
         var helpOption = commanderOptions.help;
@@ -396,8 +396,8 @@ var CLI = Class.extend({
      * @param [params]
      */
     help: function (command, method, params) {
-        var commander = this[_commanderMap][command] || this[_globalCommander];
-        var commanders = commander === this[_globalCommander] ? this[_commanderList] : [commander];
+        var commander = this[_commanderMap][command] || this[_rootCommander];
+        var commanders = commander === this[_rootCommander] ? this[_commanderList] : [commander];
         var padding = 2;
         var titleColors = ['inverse'];
         var titleLength = 12;
@@ -433,7 +433,7 @@ var CLI = Class.extend({
         // print commands
         var commandPrints = [];
         array.each(commanders, function (index, commander) {
-            if (commander.global) {
+            if (commander.root) {
                 return;
             }
 
@@ -496,10 +496,9 @@ var CLI = Class.extend({
 var sole = CLI.sole;
 var prot = CLI.prototype;
 var _options = sole();
-var _aliasKey = sole();
 var _bin = sole();
 var _banner = sole();
-var _globalCommander = sole();
+var _rootCommander = sole();
 var _commanderMap = sole();
 var _commanderList = sole();
 var _currentCommander = sole();
