@@ -85,6 +85,7 @@ var CLI = Class.extend({
         this[_currentCommander].usageList = [];
         this[_currentCommander].methods = this[_currentMethods] = {};
         this[_currentCommander].options = this[_currentOptions] = {};
+        this[_currentMethod] = null;
         this[_commanderList].push(this[_currentCommander]);
 
         return this;
@@ -200,7 +201,6 @@ var CLI = Class.extend({
         option.type = option.type || 'string';
         option.required = Boolean(option.required);
         option.message = option.message || '`' + key + '` parameter cannot be empty';
-
         option.describe = option.describe || '';
 
         if (!typeis.Null(option.for) && !typeis.String(option.for)) {
