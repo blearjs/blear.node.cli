@@ -152,6 +152,7 @@ var CLI = Class.extend({
             describe: describe || ''
         };
         this[_currentCommander].methodOptionsMap[method] = {};
+        this[_currentCommander].methodOptionsAliasesMap[method] = {};
         return this;
     },
 
