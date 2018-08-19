@@ -75,7 +75,7 @@ var CLI = Class.extend({
         }
 
         this[_currentCommander].command = command;
-        this[_currentCommander].commandOptions = this[_currentOptions] = {};
+        this[_currentCommander].commandOptions = this[_currentCommandOptions] = {};
         this[_currentCommander].commandOptionsAliases = {};
         this[_currentCommander].commandAction = function () {
             // ignore
@@ -87,7 +87,7 @@ var CLI = Class.extend({
         this[_currentCommander].methodOptionsMap = {};
         this[_currentCommander].methodOptionsAliasesMap = {};
         this[_currentCommander].methodActionsMap = {};
-        this[_currentCommander].methodsMap = this[_currentMethods] = {};
+        this[_currentCommander].methodsMap = this[_currentMethodsMap] = {};
         this[_currentMethod] = null;
         this[_commanderList].push(this[_currentCommander]);
 
@@ -147,7 +147,7 @@ var CLI = Class.extend({
             throw new Error('cannot add method to global command');
         }
 
-        this[_currentMethods][method] = this[_currentMethod] = {
+        this[_currentMethodsMap][method] = this[_currentMethod] = {
             method: method,
             describe: describe || ''
         };
@@ -177,73 +177,13 @@ var CLI = Class.extend({
             };
         }
 
-        var commander = this[_currentCommander];
         option = option || {};
-
-        if (typeis.String(option.alias)) {
-            option.alias = [option.alias];
-        }
-        option.alias = option.alias || [];
-
         key = string.separatorize(key);
-        option.keys = [key].concat(option.alias);
-        option._keys = ['--' + key].concat(option.alias.map(function (key) {
-            return '-' + key;
-        }));
-        option._keyMap = array.reduce(option.keys, function (p, c, i) {
-            p[c] = key;
-            return p;
-        }, {});
+        option.key = key;
 
-        if (!typeis.Function(option.transform)) {
-            option.transform = function (val, option, args, method) {
-                return val;
-            };
-        }
-
-        option.type = option.type || 'string';
-        option.required = Boolean(option.required);
-        option.message = option.message || '`' + key + '` parameter cannot be empty';
-        option.describe = option.describe || '';
-
-        if (!typeis.Null(option.for) && !typeis.String(option.for)) {
-            if (this[_currentMethod]) {
-                option.for = this[_currentMethod].method;
-            } else {
-                option.for = null;
-            }
-        }
-
-        if (typeis.Undefined(option.default)) {
-            option.default = option.type === 'boolean' ? false : '';
-        }
-
-        if (option.for !== null) {
-            var method = this[_currentMethods][option.for];
-
-            if (!method) {
-                throw new Error('the `' + option.for + '` method does not exist');
-            }
-
-            if (commander.methodOptionsMap[method.method][key]) {
-                throw new Error('the `option` of the `' + method.method + '` method already exists');
-            }
-
-            // add option
-            commander.methodOptionsMap[method.method][key] = option;
-            return this;
-        }
-
-        if (this[_currentOptions][key]) {
-            throw new Error('the `option` of the `' + commander.command + '` command already exists');
-        }
-
-        array.each(option.alias, function (index, alias) {
-
-        });
-
-        // add option
-        this[_currentOptions][key] = option;
+        this[_optionLimit](option);
+        this[_optionFor](option);
+        this[_optionAlias](option);
         return this;
     },
 
@@ -266,7 +206,7 @@ var CLI = Class.extend({
         }
 
         if (method) {
-            if (!this[_currentMethods][method]) {
+            if (!this[_currentMethodsMap][method]) {
                 throw new Error('the `' + method + '` method does not exist');
             }
 
@@ -563,12 +503,15 @@ var _commanderMap = sole();
 var _commanderList = sole();
 var _currentCommander = sole();
 var _currentMethod = sole();
-var _currentMethods = sole();
-var _currentOptions = sole();
+var _currentMethodsMap = sole();
+var _currentCommandOptions = sole();
 var _argv = sole();
 var _slogan = sole();
 var _print = sole();
 var _error = sole();
+var _optionLimit = sole();
+var _optionFor = sole();
+var _optionAlias = sole();
 
 prot[_slogan] = function () {
     if (this[_banner]) {
@@ -632,6 +575,119 @@ prot[_error] = function (key, option) {
     console.error(option.message);
 };
 
+/**
+ * 限制 option
+ * @param option
+ */
+prot[_optionLimit] = function (option) {
+    var key = option.key;
+
+    if (!typeis.Function(option.transform)) {
+        option.transform = function (val, args, method) {
+            return val;
+        };
+    }
+
+    option.type = option.type || 'string';
+    option.required = Boolean(option.required);
+    option.message = option.message || '`' + key + '` parameter cannot be empty';
+    option.describe = option.describe || '';
+
+    if (typeis.Undefined(option.default)) {
+        option.default = option.type === 'boolean' ? false : '';
+    }
+};
+
+/**
+ * 处理 option.for
+ * @param option
+ */
+prot[_optionFor] = function (option) {
+    var commander = this[_currentCommander];
+    var key = option.key;
+
+    if (!typeis.Null(option.for) && !typeis.String(option.for)) {
+        if (this[_currentMethod]) {
+            option.for = this[_currentMethod].method;
+        } else {
+            option.for = null;
+        }
+    }
+
+    var optionFor = option.for;
+
+    // 有独立指向
+    if (optionFor !== null) {
+        var method = this[_currentMethodsMap][optionFor];
+
+        if (!method) {
+            throw new Error('the `' + optionFor + '` method does not exist');
+        }
+
+        var methodName = method.method;
+        var methodOptions = commander.methodOptionsMap[methodName];
+
+        if (methodOptions[key]) {
+            throw new Error('the `option` of the `' + methodName + '` method already exists');
+        }
+
+        // add option
+        methodOptions[key] = option;
+        return;
+    }
+
+    if (this[_currentCommandOptions][key]) {
+        throw new Error('the `' + key + '` option of the `' + commander.command + '` command already exists');
+    }
+
+    // add option
+    this[_currentCommandOptions][key] = option;
+};
+
+/**
+ * 处理 option.alias
+ * @param option
+ */
+prot[_optionAlias] = function (option) {
+    var key = option.key;
+    var optionFor = option.for;
+    var commander = this[_currentCommander];
+    var aliases;
+    var echoName;
+
+    if (typeis.String(option.alias)) {
+        option.alias = [option.alias];
+    }
+
+    option.aliases = option.alias || [];
+    option.keys = [key].concat(option.aliases);
+    option._keys = ['--' + key].concat(option.aliases.map(function (key) {
+        return '-' + key;
+    }));
+    option._keyMap = array.reduce(option.keys, function (p, c, i) {
+        p[c] = key;
+        return p;
+    }, {});
+
+    // for command
+    if (optionFor === null) {
+        aliases = commander.commandOptionsAliases;
+        echoName = commander.command;
+    }
+    // for methods
+    else {
+        aliases = commander.methodOptionsAliasesMap[optionFor];
+        echoName = commander.command + ' ' + optionFor;
+    }
+
+    object.each(option._keyMap, function (alias) {
+        if (aliases[alias]) {
+            throw new Error('the `' + alias + '` parameter of the `' + echoName + '` command already exists');
+        }
+
+        aliases[alias] = true;
+    });
+};
 
 CLI.defaults = defaults;
 module.exports = CLI;
