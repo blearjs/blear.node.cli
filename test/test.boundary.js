@@ -93,5 +93,13 @@ describe('boundary', function () {
         });
     });
 
+    it('option-for-unconfigure-method', function (done) {
+        sandbox(require.resolve('./scripts/boundary/option-for-unconfigure-method.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('the `xyz` method of the `abc` command does not exist');
+            done();
+        });
+    });
+
 });
 

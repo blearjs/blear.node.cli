@@ -646,7 +646,7 @@ prot[_optionFor] = function (option) {
         var method = this[_currentMethodsMap][optionFor];
 
         if (!method) {
-            throw new Error('the `' + optionFor + '` method does not exist');
+            throw new Error('the `' + optionFor + '` method of the `' + commander.command + '` command does not exist');
         }
 
         var methodName = method.method;
