@@ -44,7 +44,8 @@ var CLI = Class.extend({
         this[_bin] = null;
         this[_banner] = null;
         this[_rootCommander] = {
-            root: true
+            root: true,
+            default: true
         };
         this[_commanderMap] = {};
         this[_commanderList] = [];
@@ -68,10 +69,19 @@ var CLI = Class.extend({
      */
     command: function (command, describe) {
         if (command) {
+            if (this[_commanderMap][command]) {
+                throw new Error('cannot add the same command repeatedly');
+            }
+
             this[_currentCommander] = {};
             this[_commanderMap][command] = this[_currentCommander];
         } else {
+            if (this[_rootCommander].default) {
+                throw new Error('the root command can only be executed once');
+            }
+
             this[_currentCommander] = this[_rootCommander];
+            this[_rootCommander].default = false;
         }
 
         this[_currentCommander].command = command;
