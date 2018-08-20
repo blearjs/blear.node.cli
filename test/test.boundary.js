@@ -109,5 +109,13 @@ describe('boundary', function () {
         });
     });
 
+    it('duplicate-command-option', function (done) {
+        sandbox(require.resolve('./scripts/boundary/duplicate-command-option.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('the `def` option of the `abc` command already exists');
+            done();
+        });
+    });
+
 });
 
