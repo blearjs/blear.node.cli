@@ -69,5 +69,13 @@ describe('boundary', function () {
         });
     });
 
+    it('undefined-method-action', function (done) {
+        sandbox(require.resolve('./scripts/boundary/undefined-method-action.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('the `def` method of the `abc` command does not exist');
+            done();
+        });
+    });
+
 });
 

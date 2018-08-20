@@ -222,7 +222,7 @@ var CLI = Class.extend({
 
         if (method) {
             if (!this[_currentMethodsMap][method]) {
-                throw new Error('the `' + method + '` method does not exist');
+                throw new Error('the `' + method + '` method of the `' + this[_currentCommander].command + '` command does not exist');
             }
 
             this[_currentCommander].methodActionsMap[method] = action;
