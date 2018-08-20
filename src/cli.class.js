@@ -642,18 +642,21 @@ prot[_optionFor] = function (option) {
     var optionFor = option.for;
 
     // 有独立指向
+    var commandName = commander.command;
     if (optionFor !== null) {
         var method = this[_currentMethodsMap][optionFor];
 
         if (!method) {
-            throw new Error('the `' + optionFor + '` method of the `' + commander.command + '` command does not exist');
+            throw new Error('the `' + optionFor + '` method of the `' + commandName + '` command ' +
+                'pointed to by `option` does not exist');
         }
 
         var methodName = method.method;
         var methodOptions = commander.methodOptionsMap[methodName];
 
         if (methodOptions[key]) {
-            throw new Error('the `option` of the `' + methodName + '` method already exists');
+            throw new Error('the `option` of the `' + methodName + '` method of ' +
+                'the `'+commandName+'` command already exists');
         }
 
         // add option
@@ -662,7 +665,7 @@ prot[_optionFor] = function (option) {
     }
 
     if (this[_currentCommandOptions][key]) {
-        throw new Error('the `' + key + '` option of the `' + commander.command + '` command already exists');
+        throw new Error('the `' + key + '` option of the `' + commandName + '` command already exists');
     }
 
     // add option
