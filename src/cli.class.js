@@ -247,11 +247,13 @@ var CLI = Class.extend({
         switch (args.length) {
             case 0:
                 argv = process.argv;
+                options = {};
                 break;
 
             case 1:
                 if (typeis.Array(args[0])) {
                     argv = args[0];
+                    options = {};
                 } else {
                     options = args[0];
                     argv = process.argv;
@@ -289,6 +291,11 @@ var CLI = Class.extend({
         var commander = command ? this[_commanderMap][command] || this[_rootCommander] : this[_rootCommander];
         var args = {};
         var commanderOptions = commander.commandOptions;
+
+        if (!commanderOptions) {
+            throw new Error('at least one `command` method needs to be executed');
+        }
+
         var helpOption = commanderOptions.help;
         var versionOPtion = commanderOptions.version;
         var the = this;

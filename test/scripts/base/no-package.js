@@ -10,12 +10,6 @@
 
 var cli = require('../../../src/index');
 
-cli.parse(process.argv, {
-    package: {
-        version: '1.0.0',
-        name: 'simple',
-        bin: 'simple'
-    }
-});
+cli.parse(process.argv);
 
 

@@ -9,11 +9,13 @@
 'use strict';
 
 var spawn = require('child_process').spawn;
+var Error = require('blear.classes.error');
 
 /**
  * 沙盒内执行命令
  * @param script
  * @param args
+ * @param callback
  * @returns {*}
  */
 module.exports = function (script, args, callback) {
@@ -35,7 +37,12 @@ module.exports = function (script, args, callback) {
             return callback(null, data);
         }
 
-        callback(new Error(code), data);
+        var message = data.match(/Error: (.*)$/m)[1];
+        callback(new Error({
+            code: code,
+            pid: child.pid,
+            message: message
+        }), data);
     });
 };
 
