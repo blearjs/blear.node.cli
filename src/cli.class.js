@@ -76,7 +76,7 @@ var CLI = Class.extend({
             this[_currentCommander] = {};
             this[_commanderMap][command] = this[_currentCommander];
         } else {
-            if (this[_rootCommander].default) {
+            if (this[_rootCommander].default === false) {
                 throw new Error('the root command can only be executed once');
             }
 
@@ -210,6 +210,10 @@ var CLI = Class.extend({
         if (args.length === 1) {
             action = args[0];
             method = null;
+        }
+
+        if (this[_currentCommander].root && method) {
+            throw new Error('cannot add method action to root command');
         }
 
         if (!typeis.Function(action)) {

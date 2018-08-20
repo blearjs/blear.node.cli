@@ -45,5 +45,29 @@ describe('boundary', function () {
         });
     });
 
+    it('method-root-command', function (done) {
+        sandbox(require.resolve('./scripts/boundary/method-root-command.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('cannot add method to root command');
+            done();
+        });
+    });
+
+    it('root-command-method-action', function (done) {
+        sandbox(require.resolve('./scripts/boundary/root-command-method-action.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('cannot add method action to root command');
+            done();
+        });
+    });
+
+    it('unfunction-action', function (done) {
+        sandbox(require.resolve('./scripts/boundary/unfunction-action.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('the `action` parameter must be a function');
+            done();
+        });
+    });
+
 });
 
