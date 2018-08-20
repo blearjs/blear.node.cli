@@ -21,14 +21,6 @@ describe('boundary', function () {
         });
     });
 
-    it('no-command', function (done) {
-        sandbox(require.resolve('./scripts/boundary/no-command.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('at least one `command` method needs to be executed');
-            done();
-        });
-    });
-
     it('duplicate-root-command', function (done) {
         sandbox(require.resolve('./scripts/boundary/duplicate-root-command.js'), [], function (err, data) {
             console.log(data);
@@ -81,6 +73,22 @@ describe('boundary', function () {
         sandbox(require.resolve('./scripts/boundary/unfunction-error.js'), [], function (err, data) {
             console.log(data);
             expect(err.message).toBe('the `error` parameter must be a function');
+            done();
+        });
+    });
+
+    it('no-root-command', function (done) {
+        sandbox(require.resolve('./scripts/boundary/no-root-command.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('the root command is not configured');
+            done();
+        });
+    });
+
+    it('no-child-command', function (done) {
+        sandbox(require.resolve('./scripts/boundary/no-child-command.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('the `abc` command is not configured');
             done();
         });
     });

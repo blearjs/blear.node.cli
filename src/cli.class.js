@@ -302,14 +302,18 @@ var CLI = Class.extend({
      * @returns {*}
      */
     exec: function (command, method, params) {
-        var commander = command ? this[_commanderMap][command] || this[_rootCommander] : this[_rootCommander];
+        var commander = command ? this[_commanderMap][command] : this[_rootCommander];
         var args = {};
-        var commanderOptions = commander.commandOptions;
 
-        if (!commanderOptions) {
-            throw new Error('at least one `command` method needs to be executed');
+        if (!commander) {
+            throw new Error('the `' + command + '` command is not configured');
         }
 
+        if (!commander.commandOptions) {
+            throw new Error('the root command is not configured');
+        }
+
+        var commanderOptions = commander.commandOptions;
         var helpOption = commanderOptions.help;
         var versionOPtion = commanderOptions.version;
         var the = this;
