@@ -70,7 +70,7 @@ var CLI = Class.extend({
     command: function (command, describe) {
         if (command) {
             if (this[_commanderMap][command]) {
-                throw new Error('cannot add the same command repeatedly');
+                throw new Error('cannot add the `'+command+'` method with the same name');
             }
 
             this[_currentCommander] = {};
@@ -656,7 +656,7 @@ prot[_optionFor] = function (option) {
 
         if (methodOptions[key]) {
             throw new Error('the `option` of the `' + methodName + '` method of ' +
-                'the `'+commandName+'` command already exists');
+                'the `' + commandName + '` command already exists');
         }
 
         // add option
@@ -681,7 +681,6 @@ prot[_optionAlias] = function (option) {
     var optionFor = option.for;
     var commander = this[_currentCommander];
     var aliases;
-    var echoName;
 
     if (typeis.String(option.alias)) {
         option.alias = [option.alias];
@@ -698,19 +697,19 @@ prot[_optionAlias] = function (option) {
     }, {});
 
     // for command
+    var commandName = commander.command;
     if (optionFor === null) {
         aliases = commander.commandOptionsAliases;
-        echoName = commander.command;
     }
     // for methods
     else {
         aliases = commander.methodOptionsAliasesMap[optionFor];
-        echoName = commander.command + ' ' + optionFor;
     }
 
     object.each(option._keyMap, function (alias) {
         if (aliases[alias]) {
-            throw new Error('the `' + alias + '` parameter of the `' + echoName + '` command already exists');
+            throw new Error('the `' + alias + '` alias of the `' + option.key + '` option ' +
+                'of the `' + commandName + '` command already exists');
         }
 
         aliases[alias] = true;

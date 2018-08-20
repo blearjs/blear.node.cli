@@ -32,7 +32,7 @@ describe('boundary', function () {
     it('duplicate-command', function (done) {
         sandbox(require.resolve('./scripts/boundary/duplicate-command.js'), [], function (err, data) {
             console.log(data);
-            expect(err.message).toBe('cannot add the same command repeatedly');
+            expect(err.message).toBe('cannot add the `abc` method with the same name');
             done();
         });
     });
@@ -113,6 +113,14 @@ describe('boundary', function () {
         sandbox(require.resolve('./scripts/boundary/duplicate-command-option.js'), [], function (err, data) {
             console.log(data);
             expect(err.message).toBe('the `def` option of the `abc` command already exists');
+            done();
+        });
+    });
+
+    it('duplicate-option-alias', function (done) {
+        sandbox(require.resolve('./scripts/boundary/duplicate-option-alias.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('the `d` alias of the `dfg` option of the `abc` command already exists');
             done();
         });
     });
