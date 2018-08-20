@@ -9,120 +9,230 @@
 'use strict';
 
 var expect = require('chai-jasmine').expect;
-var sandbox = require('./sandbox');
+var Cli = require('../src/cli.class');
+var argv = require('./argv');
 
 describe('boundary', function () {
 
-    it('no-package', function (done) {
-        sandbox(require.resolve('./scripts/boundary/no-package.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `package` parameter cannot be empty');
-            done();
-        });
+    it('no-package', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli.parse(argv());
+        }).toThrowError('the `package` parameter cannot be empty');
     });
 
-    it('duplicate-root-command', function (done) {
-        sandbox(require.resolve('./scripts/boundary/duplicate-root-command.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the root command can only be executed once');
-            done();
-        });
+    it('duplicate-root-command', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .command()
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('the root command can only be executed once');
     });
 
-    it('duplicate-command', function (done) {
-        sandbox(require.resolve('./scripts/boundary/duplicate-command.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('cannot add the `abc` method with the same name');
-            done();
-        });
+    it('duplicate-command', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command('abc')
+                .command('abc')
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('cannot add the `abc` method with the same name');
     });
 
-    it('method-root-command', function (done) {
-        sandbox(require.resolve('./scripts/boundary/method-root-command.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('cannot add method to root command');
-            done();
-        });
+    it('method-root-command', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .method('abc')
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('cannot add method to root command');
     });
 
-    it('root-command-method-action', function (done) {
-        sandbox(require.resolve('./scripts/boundary/root-command-method-action.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('cannot add method action to root command');
-            done();
-        });
+    it('root-command-method-action', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .action('abc', function () {
+
+                })
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('cannot add method action to root command');
     });
 
-    it('unfunction-action', function (done) {
-        sandbox(require.resolve('./scripts/boundary/unfunction-action.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `action` parameter must be a function');
-            done();
-        });
+    it('unfunction-action', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .action(null)
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('the `action` parameter must be a function');
     });
 
-    it('undefined-method-action', function (done) {
-        sandbox(require.resolve('./scripts/boundary/undefined-method-action.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `def` method of the `abc` command does not exist');
-            done();
-        });
+    it('undefined-method-action', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command('abc')
+                .action('def', function () {
+
+                })
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('the `def` method of the `abc` command does not exist');
     });
 
-    it('unfunction-error', function (done) {
-        sandbox(require.resolve('./scripts/boundary/unfunction-error.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `error` parameter must be a function');
-            done();
-        });
+    it('unfunction-error', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .error(null)
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('the `error` parameter must be a function');
     });
 
-    it('no-root-command', function (done) {
-        sandbox(require.resolve('./scripts/boundary/no-root-command.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the root command is not configured');
-            done();
-        });
+    it('no-root-command', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli.parse(argv(), {
+                package: {
+                    version: '1.0.0'
+                }
+            });
+        }).toThrowError('the root command is not configured');
     });
 
-    it('no-child-command', function (done) {
-        sandbox(require.resolve('./scripts/boundary/no-child-command.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `abc` command is not configured');
-            done();
-        });
+    it('no-child-command', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .action(function () {
+                    cli.exec('abc');
+                })
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('the `abc` command is not configured');
     });
 
-    it('option-for-unconfigure-method', function (done) {
-        sandbox(require.resolve('./scripts/boundary/option-for-unconfigure-method.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `xyz` method of the `abc` command pointed to by `option` does not exist');
-            done();
-        });
+    it('option-for-unconfigure-method', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .command('abc')
+                .option('def', {
+                    for: 'xyz'
+                })
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('the `xyz` method of the `abc` command pointed to by `option` does not exist');
     });
 
-    it('option-for-duplicate-method', function (done) {
-        sandbox(require.resolve('./scripts/boundary/option-for-duplicate-method.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `option` of the `def` method of the `abc` command already exists');
-            done();
-        });
+    it('option-for-duplicate-method', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .command('abc')
+                .method('def')
+                .option('xyz')
+                .option('xyz')
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('the `option` of the `def` method of the `abc` command already exists');
     });
 
-    it('duplicate-command-option', function (done) {
-        sandbox(require.resolve('./scripts/boundary/duplicate-command-option.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `def` option of the `abc` command already exists');
-            done();
-        });
+    it('duplicate-command-option', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .command('abc')
+                .option('def')
+                .option('def')
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+        }).toThrowError('the `def` option of the `abc` command already exists');
     });
 
-    it('duplicate-option-alias', function (done) {
-        sandbox(require.resolve('./scripts/boundary/duplicate-option-alias.js'), [], function (err, data) {
-            console.log(data);
-            expect(err.message).toBe('the `d` alias of the `dfg` option of the `abc` command already exists');
-            done();
-        });
+    it('duplicate-option-alias', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli
+                .command()
+                .command('abc')
+                .option('def', {
+                    alias: 'd'
+                })
+                .option('dfg', {
+                    alias: 'd'
+                })
+                .parse(argv(), {
+                    package: {
+                        version: '1.0.0'
+                    }
+                });
+
+        }).toThrowError('the `d` alias of the `dfg` option of the `abc` command already exists');
     });
 
 });
