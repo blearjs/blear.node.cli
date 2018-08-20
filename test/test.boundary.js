@@ -77,5 +77,13 @@ describe('boundary', function () {
         });
     });
 
+    it('unfunction-error', function (done) {
+        sandbox(require.resolve('./scripts/boundary/unfunction-error.js'), [], function (err, data) {
+            console.log(data);
+            expect(err.message).toBe('the `error` parameter must be a function');
+            done();
+        });
+    });
+
 });
 
