@@ -280,7 +280,7 @@ var CLI = Class.extend({
 
     /**
      * 执行命令
-     * @param command {string}
+     * @param command {string | undefined}
      * @param [method] {string}
      * @param [params] {array}
      * @returns {*}

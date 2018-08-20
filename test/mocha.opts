@@ -1,4 +1,4 @@
 --reporter progress
 --ui bdd
 --timeout 0
---recursive
+--recursive ./test/**/test.*.js
