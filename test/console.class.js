@@ -63,3 +63,4 @@ object.each(console.colors, function (color) {
     Console.prototype[method] = Console.prototype.empty;
 });
 
+module.exports = Console;

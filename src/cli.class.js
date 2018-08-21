@@ -1,8 +1,8 @@
 /**
- * 文件描述
+ * cli 类
  * @author ydr.me
  * @create 2018-08-16 10:19
- * @update 2018-08-16 10:19
+ * @update 2018年08月21日08:11:08
  */
 
 
@@ -41,6 +41,7 @@ var defaults = {
 };
 var CLI = Class.extend({
     constructor: function () {
+        this.console = console;
         this[_bin] = null;
         this[_banner] = null;
         this[_rootCommander] = {
@@ -421,6 +422,7 @@ var CLI = Class.extend({
      * @param [params]
      */
     help: function (command, method, params) {
+        var the = this;
         var commander = this[_commanderMap][command] || this[_rootCommander];
         var commanders = commander === this[_rootCommander] ? this[_commanderList] : [commander];
         var padding = 2;
@@ -434,7 +436,7 @@ var CLI = Class.extend({
                 endding = 's:';
             }
 
-            return console.pretty(
+            return the.console.pretty(
                 string.padEnd(
                     titlePadding + name + endding,
                     titleLength
@@ -450,9 +452,9 @@ var CLI = Class.extend({
             });
         });
         if (usagePrints.length) {
-            console.log(buildTitle(usagePrints, 'Usage'));
+            this.console.log(buildTitle(usagePrints, 'Usage'));
             this[_print](padding, usagePrints);
-            console.log();
+            this.console.log();
         }
 
         // print commands
@@ -465,9 +467,9 @@ var CLI = Class.extend({
             commandPrints.push([commander.command, commander.commandDescribe]);
         });
         if (commandPrints.length) {
-            console.log(buildTitle(commandPrints, 'Command'));
+            this.console.log(buildTitle(commandPrints, 'Command'));
             this[_print](padding, commandPrints);
-            console.log();
+            this.console.log();
         }
 
         // print methods
@@ -488,9 +490,9 @@ var CLI = Class.extend({
         }
 
         if (methodsPrints.length) {
-            console.log(buildTitle(methodsPrints, 'Method'));
+            this.console.log(buildTitle(methodsPrints, 'Method'));
             this[_print](padding, methodsPrints);
-            console.log();
+            this.console.log();
         }
 
         // print options
@@ -505,7 +507,7 @@ var CLI = Class.extend({
             });
         }
         if (optionsPrints.length) {
-            console.log(buildTitle(optionsPrints, 'Option'));
+            this.console.log(buildTitle(optionsPrints, 'Option'));
             this[_print](padding, optionsPrints);
         }
     },
@@ -514,8 +516,8 @@ var CLI = Class.extend({
      * 输出版本并进行版本比较
      */
     version: function () {
-        console.log('local version', this[_options].package.version);
-        checkVersion(this[_options].package);
+        this.console.log('local version', this[_options].package.version);
+        this[_checkVersion]();
     }
 });
 var sole = CLI.sole;
@@ -537,10 +539,11 @@ var _error = sole();
 var _optionLimit = sole();
 var _optionFor = sole();
 var _optionAlias = sole();
+var _checkVersion = sole();
 
 prot[_slogan] = function () {
     if (this[_banner]) {
-        console.log(this[_banner]);
+        this.console.log(this[_banner]);
     }
 };
 
@@ -550,6 +553,7 @@ prot[_slogan] = function () {
  * @param list
  */
 prot[_print] = function (indentLength, list) {
+    var the = this;
     var lines = [];
     var keyLength = this[_options].keyLength;
     var space = '  ';
@@ -568,7 +572,7 @@ prot[_print] = function (indentLength, list) {
             lines.push(
                 [
                     indent,
-                    console.colors.bold(key)
+                    the.console.colors.bold(key)
                 ].join('')
             );
 
@@ -579,7 +583,7 @@ prot[_print] = function (indentLength, list) {
             lines.push(
                 [
                     indent,
-                    console.colors.bold(string.padEnd(key, keyLength, ' ')),
+                    the.console.colors.bold(string.padEnd(key, keyLength, ' ')),
                     space,
                     indentText(valIndent, val, false)
                 ].join('')
@@ -587,7 +591,7 @@ prot[_print] = function (indentLength, list) {
         }
     });
 
-    console.log(lines.join('\n'));
+    this.console.log(lines.join('\n'));
 };
 
 /**
@@ -597,7 +601,7 @@ prot[_print] = function (indentLength, list) {
  */
 prot[_error] = function (key, option) {
     this[_slogan]();
-    console.error(option.message);
+    this.console.error(option.message);
 };
 
 /**
@@ -716,16 +720,68 @@ prot[_optionAlias] = function (option) {
     });
 };
 
-CLI.defaults = defaults;
+prot[_checkVersion] = function () {
+    var the = this;
+    var pkg = this[_options].package;
+    /**
+     * 版本检查
+     * @param pkg
+     */
+        this.console.loading();
+        request({
+            url: 'http://registry.npm.taobao.org/' + pkg.name
+        }, function (err, body) {
+            if (err) {
+                the.console.loadingEnd();
+                return
+            }
+
+            try {
+                var json = JSON.parse(body);
+            } catch (err) {
+                the.console.loadingEnd();
+                return;
+            }
+
+            var latestVersion = json['dist-tags'] && json['dist-tags'].latest || '';
+
+            if (!latestVersion) {
+                the.console.loadingEnd();
+                return;
+            }
+
+            the.console.loadingEnd();
+            var currentVersion = pkg.version;
+            if (version.lt(currentVersion, latestVersion)) {
+                the.console.log(
+                    the.console.pretty(
+                        'Update available',
+                        currentVersion,
+                        '→',
+                        latestVersion,
+                        [
+                            'bold',
+                            'red'
+                        ]
+                    )
+                );
+            }
+        });
+
+};
+
 /**
  * 私有方法，专为单元测试用
  * 注入 console，以便单元测试可以捕获打印信息
  * @param _console
  * @private
  */
-CLI._injectConsole = function (_console) {
-    console = _console;
+prot._injectConsole = function (_console) {
+    this.console = _console;
 };
+
+CLI.defaults = defaults;
+
 module.exports = CLI;
 
 // =============================
@@ -757,49 +813,3 @@ function indentText(indent, text, indentFirstLine) {
 }
 
 
-/**
- * 版本检查
- * @param pkg
- */
-function checkVersion(pkg) {
-    console.loading();
-    request({
-        url: 'http://registry.npm.taobao.org/' + pkg.name
-    }, function (err, body) {
-        if (err) {
-            console.loadingEnd();
-            return
-        }
-
-        try {
-            var json = JSON.parse(body);
-        } catch (err) {
-            console.loadingEnd();
-            return;
-        }
-
-        var latestVersion = json['dist-tags'] && json['dist-tags'].latest || '';
-
-        if (!latestVersion) {
-            console.loadingEnd();
-            return;
-        }
-
-        console.loadingEnd();
-        var currentVersion = pkg.version;
-        if (version.lt(currentVersion, latestVersion)) {
-            console.log(
-                console.pretty(
-                    'Update available',
-                    currentVersion,
-                    '→',
-                    latestVersion,
-                    [
-                        'bold',
-                        'red'
-                    ]
-                )
-            );
-        }
-    });
-}
