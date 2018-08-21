@@ -377,14 +377,13 @@ var CLI = Class.extend({
 
                 val = val || option.default;
                 val = option.transform(val, args, method);
+                args[string.humprize(key)] = val;
 
                 if (option.type === 'string' && option.required === true && val.length === 0) {
                     broken = true;
-                    commander.commandError.call(the, key, option, args, method);
+                    commander.commandError.call(the, key, args, option, method);
                     return false;
                 }
-
-                args[string.humprize(key)] = val;
             });
             return broken;
         };
@@ -602,9 +601,11 @@ prot[_print] = function (indentLength, list) {
 /**
  * 打印错误信息
  * @param key
+ * @param args
  * @param option
+ * @param method
  */
-prot[_error] = function (key, option) {
+prot[_error] = function (key, args, option, method) {
     this[_slogan]();
     this.console.error(option.message);
 };
