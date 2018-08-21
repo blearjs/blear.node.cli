@@ -19,12 +19,19 @@ var FakeConsole = Class.extend({
         this.output = '';
     },
 
+    /**
+     * 获取当前内容
+     * @returns {string|*}
+     */
     get: function () {
         return this.output;
     },
 
-    lines: function () {
-          return this.output.split(/\n/g).length;
+    /**
+     * 清除内容
+     */
+    clear: function () {
+        this.output = '';
     },
 
     print: function () {
