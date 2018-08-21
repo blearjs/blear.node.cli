@@ -52,8 +52,6 @@ describe('banner', function () {
         console.log(fakeConsole.get());
         expect(fakeConsole.lines()).toBe(4);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
-        expect(fakeConsole.get()).toMatch(/^\s{2}Option:\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}--help, -h, -H\s+print help information$/m);
     });
 
     it('child command', function () {
@@ -87,10 +85,6 @@ describe('banner', function () {
         console.log(fakeConsole.get());
         expect(fakeConsole.lines()).toBe(7);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
-        expect(fakeConsole.get()).toMatch(/^\s{2}Command:\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}abc\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}Option:\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}--help, -h, -H\s+print help information$/m);
     });
 
     it('child command method', function () {
@@ -126,12 +120,6 @@ describe('banner', function () {
         console.log(fakeConsole.get());
         expect(fakeConsole.lines()).toBe(10);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
-        expect(fakeConsole.get()).toMatch(/^\s{2}Command:\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}abc\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}Method:\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}def\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}Option:\s+$/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}--help, -h, -H\s+print help information$/m);
     });
 
 });
