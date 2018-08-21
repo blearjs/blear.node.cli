@@ -34,6 +34,21 @@ describe('root-command', function () {
         expect(fakeConsole.get()).toBe('');
     });
 
+    it('help', function () {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .action(function () {
+                cli.help();
+            })
+            .parse(argv(), options);
+        console.log(fakeConsole.get());
+        expect(fakeConsole.get()).toBe('');
+    });
+
     it('helper', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();

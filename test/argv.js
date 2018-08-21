@@ -8,14 +8,16 @@
 
 'use strict';
 
+var access  = require('blear.utils.access');
+
 
 /**
  * 组合成 argv
- * @param args
- * @returns {*}
+ * @param arg...
+ * @returns {array}
  */
-module.exports = function (args) {
-    args = args || [];
+module.exports = function (arg/*arguments*/) {
+    var args = access.args(arguments);
     args.unshift('bin');
     args.unshift(process.execPath);
     return args;
