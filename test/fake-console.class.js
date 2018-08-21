@@ -14,9 +14,17 @@ var console = require('blear.node.console');
 var access = require('blear.utils.access');
 var object = require('blear.utils.object');
 
-var Console = Class.extend({
+var FakeConsole = Class.extend({
     constructor: function () {
         this.output = '';
+    },
+
+    get: function () {
+        return this.output;
+    },
+
+    lines: function () {
+          return this.output.split(/\n/g).length;
     },
 
     print: function () {
@@ -49,18 +57,18 @@ var Console = Class.extend({
     'warnWithTime',
     'errorWithTime'
 ].forEach(function (method) {
-    Console.prototype[method] = Console.prototype.print;
+    FakeConsole.prototype[method] = FakeConsole.prototype.print;
 });
 
 object.each(console.colors, function (color) {
-    Console.prototype.colors[color] = Console.prototype.color;
+    FakeConsole.prototype.colors[color] = FakeConsole.prototype.color;
 });
 
 [
     'loading',
     'loadingEnd'
 ].forEach(function (method) {
-    Console.prototype[method] = Console.prototype.empty;
+    FakeConsole.prototype[method] = FakeConsole.prototype.empty;
 });
 
-module.exports = Console;
+module.exports = FakeConsole;
