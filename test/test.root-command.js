@@ -31,6 +31,7 @@ describe('root-command', function () {
             .command()
             .parse(argv(), options);
         console.log(fakeConsole.get());
+        expect(fakeConsole.lines()).toBe(1);
         expect(fakeConsole.get()).toBe('');
     });
 
@@ -46,6 +47,7 @@ describe('root-command', function () {
             })
             .parse(argv(), options);
         console.log(fakeConsole.get());
+        expect(fakeConsole.lines()).toBe(1);
         expect(fakeConsole.get()).toBe('');
     });
 
@@ -59,6 +61,7 @@ describe('root-command', function () {
             .helper()
             .parse(argv(), options);
         console.log(fakeConsole.get());
+        expect(fakeConsole.lines()).toBe(1);
         expect(fakeConsole.get()).toBe('');
     });
 
@@ -76,9 +79,8 @@ describe('root-command', function () {
             .parse(argv(), options);
         console.log(fakeConsole.get());
         expect(fakeConsole.lines()).toEqual(3);
-        expect(fakeConsole.get()).toMatch(/^\s{2}Option:/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}--help/m);
-        expect(fakeConsole.get()).toMatch(/print help information/);
+        expect(fakeConsole.get()).toMatch(/^\s{2}Option:\s+$/m);
+        expect(fakeConsole.get()).toMatch(/^\s{2}--help, -h, -H\s+print help information$/m);
     });
 
     it('helper assgin + action', function () {
@@ -95,9 +97,8 @@ describe('root-command', function () {
             .parse(argv(), options);
         console.log(fakeConsole.get());
         expect(fakeConsole.lines()).toEqual(3);
-        expect(fakeConsole.get()).toMatch(/^\s{2}Option:/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}--help/m);
-        expect(fakeConsole.get()).toMatch(/help message$/m);
+        expect(fakeConsole.get()).toMatch(/^\s{2}Option:\s+$/m);
+        expect(fakeConsole.get()).toMatch(/^\s{2}--help, -h, -H\s+help message$/m);
     });
 
     it('option + helper assgin + action', function () {
@@ -119,12 +120,11 @@ describe('root-command', function () {
             .parse(argv(), options);
         console.log(fakeConsole.get());
         expect(fakeConsole.lines()).toEqual(6);
-        expect(fakeConsole.get()).toMatch(/^\s{2}Options:/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}--help/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}--abc/m);
-        expect(fakeConsole.get()).toMatch(/^\s{2}--def/m);
-        expect(fakeConsole.get()).toMatch(/DEF$/m);
-        expect(fakeConsole.get()).toMatch(/XYZ$/m);
+        expect(fakeConsole.get()).toMatch(/^\s{2}Options:\s+$/m);
+        expect(fakeConsole.get()).toMatch(/^\s{2}--help, -h, -H\s+help message$/m);
+        expect(fakeConsole.get()).toMatch(/^\s{2}--abc\s+$/m);
+        expect(fakeConsole.get()).toMatch(/^\s{2}--def\s+DEF$/m);
+        expect(fakeConsole.get()).toMatch(/^\s{2}--xyz\s+XYZ/m);
     });
 
 });
