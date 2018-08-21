@@ -334,14 +334,6 @@ var CLI = Class.extend({
             return versionOPtion.action.call(this, command, method, params);
         }
 
-        delete commanderOptions.help;
-        delete commanderOptions.version;
-
-        if (methodOptions) {
-            delete methodOptions.help;
-            delete methodOptions.version;
-        }
-
         var eachOptions = function (options) {
             if (!options) {
                 return false;
@@ -351,6 +343,10 @@ var CLI = Class.extend({
             object.each(options, function (key, option) {
                 if (broken === true) {
                     return false;
+                }
+
+                if (key === 'help' || key === 'version') {
+                    return;
                 }
 
                 var val = null;
@@ -727,46 +723,46 @@ prot[_checkVersion] = function () {
      * 版本检查
      * @param pkg
      */
-        this.console.loading();
-        request({
-            url: 'http://registry.npm.taobao.org/' + pkg.name
-        }, function (err, body) {
-            if (err) {
-                the.console.loadingEnd();
-                return
-            }
-
-            try {
-                var json = JSON.parse(body);
-            } catch (err) {
-                the.console.loadingEnd();
-                return;
-            }
-
-            var latestVersion = json['dist-tags'] && json['dist-tags'].latest || '';
-
-            if (!latestVersion) {
-                the.console.loadingEnd();
-                return;
-            }
-
+    this.console.loading();
+    request({
+        url: 'http://registry.npm.taobao.org/' + pkg.name
+    }, function (err, body) {
+        if (err) {
             the.console.loadingEnd();
-            var currentVersion = pkg.version;
-            if (version.lt(currentVersion, latestVersion)) {
-                the.console.log(
-                    the.console.pretty(
-                        'Update available',
-                        currentVersion,
-                        '→',
-                        latestVersion,
-                        [
-                            'bold',
-                            'red'
-                        ]
-                    )
-                );
-            }
-        });
+            return
+        }
+
+        try {
+            var json = JSON.parse(body);
+        } catch (err) {
+            the.console.loadingEnd();
+            return;
+        }
+
+        var latestVersion = json['dist-tags'] && json['dist-tags'].latest || '';
+
+        if (!latestVersion) {
+            the.console.loadingEnd();
+            return;
+        }
+
+        the.console.loadingEnd();
+        var currentVersion = pkg.version;
+        if (version.lt(currentVersion, latestVersion)) {
+            the.console.log(
+                the.console.pretty(
+                    'Update available',
+                    currentVersion,
+                    '→',
+                    latestVersion,
+                    [
+                        'bold',
+                        'red'
+                    ]
+                )
+            );
+        }
+    });
 
 };
 
@@ -774,9 +770,8 @@ prot[_checkVersion] = function () {
  * 私有方法，专为单元测试用
  * 注入 console，以便单元测试可以捕获打印信息
  * @param _console
- * @private
  */
-prot._injectConsole = function (_console) {
+prot.$$injectConsole$$ = function (_console) {
     this.console = _console;
 };
 
