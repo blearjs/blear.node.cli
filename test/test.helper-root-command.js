@@ -23,6 +23,26 @@ var options = {
 
 describe('helper-root-command', function () {
 
+    it('none', function () {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+        var rules = [
+            /^$/
+        ];
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command();
+
+        cli.parse(argv('--help'), options);
+        console.log(fakeConsole.get());
+        matchHelper(fakeConsole, rules);
+        cli.parse(argv('-h'), options);
+        matchHelper(fakeConsole, rules);
+        cli.parse(argv('-H'), options);
+        matchHelper(fakeConsole, rules);
+    });
+
     it('default', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();
