@@ -450,7 +450,6 @@ var CLI = Class.extend({
         if (usagePrints.length) {
             this.console.log(buildTitle(usagePrints, 'Usage'));
             this[_print](padding, usagePrints);
-            this.console.log();
         }
 
         // print commands
@@ -463,32 +462,38 @@ var CLI = Class.extend({
             commandPrints.push([commander.command, commander.commandDescribe]);
         });
         if (commandPrints.length) {
+            if (usagePrints.length) {
+                this.console.log();
+            }
+
             this.console.log(buildTitle(commandPrints, 'Command'));
             this[_print](padding, commandPrints);
-            this.console.log();
         }
 
         // print methods
-        var methodsPrints = [];
+        var methodPrints = [];
         var methodDetail = null;
         if (method) {
             methodDetail = commander.methodsMap[method];
 
             if (methodDetail) {
-                methodsPrints.push([methodDetail.method, methodDetail.describe]);
+                methodPrints.push([methodDetail.method, methodDetail.describe]);
             }
         }
 
         if (!methodDetail) {
             object.each(commander.methodsMap, function (_, detail) {
-                methodsPrints.push([detail.method, detail.describe]);
+                methodPrints.push([detail.method, detail.describe]);
             });
         }
 
-        if (methodsPrints.length) {
-            this.console.log(buildTitle(methodsPrints, 'Method'));
-            this[_print](padding, methodsPrints);
-            this.console.log();
+        if (methodPrints.length) {
+            if (usagePrints.length || commandPrints.length) {
+                this.console.log();
+            }
+
+            this.console.log(buildTitle(methodPrints, 'Method'));
+            this[_print](padding, methodPrints);
         }
 
         // print options
@@ -503,6 +508,10 @@ var CLI = Class.extend({
             });
         }
         if (optionsPrints.length) {
+            if (usagePrints.length || commandPrints.length || methodPrints.length) {
+                this.console.log();
+            }
+
             this.console.log(buildTitle(optionsPrints, 'Option'));
             this[_print](padding, optionsPrints);
         }

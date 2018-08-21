@@ -35,10 +35,12 @@ describe('child-command', function () {
             .command('abc')
             .parse(argv(), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.get()).toBe('');
+        expect(fakeConsole.lines()).toBe(3);
+        expect(fakeConsole.get()).toMatch(/^\s+Command:\s+$/m);
+        expect(fakeConsole.get()).toMatch(/^\s+abc\s+$/m);
     });
 
-    it('default', function () {
+    it('defau2lt', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();
 
@@ -48,6 +50,7 @@ describe('child-command', function () {
             .command('abc')
             .parse(argv(), options);
         console.log(fakeConsole.get());
+        expect(fakeConsole.lines()).toBe(3);
         expect(fakeConsole.get()).toBe('');
     });
 
