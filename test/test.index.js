@@ -8,12 +8,10 @@
 
 'use strict';
 
-var cli = require('../src/index');
-
 describe('index', function () {
 
     it('empty', function () {
-        // empty
+        require('../src/index')
     });
 
 });
