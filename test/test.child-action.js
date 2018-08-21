@@ -107,6 +107,55 @@ describe('child-action', function () {
         expect(fakeConsole.get()).toBe('');
     });
 
+    it('method action', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .command('abc')
+            .option('abc')
+            .method('abc')
+            .action(function (args, method, params) {
+
+            })
+            .action('abc', function (args, params) {
+                expect(args.abc).toEqual('abc');
+                expect(params).toEqual(['abc']);
+                done();
+            })
+            .parse(argv('abc', '--abc', 'abc', 'abc', 'abc'), options);
+        console.log(fakeConsole.get());
+        expect(fakeConsole.lines()).toBe(1);
+        expect(fakeConsole.get()).toBe('');
+    });
+
+    it('multiple method action', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .command('abc')
+            .option('abc')
+            .method('abc')
+            .method('def')
+            .action(function (args, method, params) {
+
+            })
+            .action('def', function (args, params) {
+                expect(args.abc).toEqual('abc');
+                expect(params).toEqual(['abc']);
+                done();
+            })
+            .parse(argv('abc', '--abc', 'abc', 'def', 'abc'), options);
+        console.log(fakeConsole.get());
+        expect(fakeConsole.lines()).toBe(1);
+        expect(fakeConsole.get()).toBe('');
+    });
+
 });
 
 
