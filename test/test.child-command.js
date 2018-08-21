@@ -22,7 +22,7 @@ var options = {
 
 describe('child-command', function () {
 
-    it('default', function () {
+    it('one command', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();
 
@@ -40,7 +40,7 @@ describe('child-command', function () {
         expect(fakeConsole.get()).toMatch(/^\s{2}abc\s+$/m);
     });
 
-    it('multiple command', function () {
+    it('multiple commands', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();
 
