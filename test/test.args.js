@@ -84,5 +84,35 @@ describe('args', function () {
         }, 10);
     });
 
+    it('method options', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+        var called = false;
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .command('cmd1')
+            .option('opt1', {
+                type: 'string'
+            })
+            .method('method1')
+            .option('opt2', {
+                type: 'string',
+                required: true
+            })
+            .action(function (args) {
+                called = true;
+            });
+
+        setTimeout(function () {
+            cli.parse(argv('cmd1', 'method1', '--opt2'), options);
+            console.log(fakeConsole.get());
+            expect(called).toBe(false);
+            expect(fakeConsole.get()).toBe('`opt2` parameter cannot be empty\n');
+            done();
+        }, 10);
+    });
+
 });
 
