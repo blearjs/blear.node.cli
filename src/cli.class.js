@@ -70,7 +70,7 @@ var CLI = Class.extend({
     command: function (command, describe) {
         if (command) {
             if (this[_commanderMap][command]) {
-                throw new Error('cannot add the `'+command+'` method with the same name');
+                throw new Error('cannot add the `' + command + '` method with the same name');
             }
 
             this[_currentCommander] = {};
@@ -717,6 +717,15 @@ prot[_optionAlias] = function (option) {
 };
 
 CLI.defaults = defaults;
+/**
+ * 私有方法，专为单元测试用
+ * 注入 console，以便单元测试可以捕获打印信息
+ * @param _console
+ * @private
+ */
+CLI._injectConsole = function (_console) {
+    console = _console;
+};
 module.exports = CLI;
 
 // =============================
