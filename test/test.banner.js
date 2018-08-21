@@ -34,7 +34,6 @@ describe('banner', function () {
             .command()
             .parse(argv(), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(2);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
     });
 
@@ -50,7 +49,6 @@ describe('banner', function () {
             .helper()
             .parse(argv('-H'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(4);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
     });
 
@@ -66,7 +64,6 @@ describe('banner', function () {
             .command('abc')
             .parse(argv('abc'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(2);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
     });
 
@@ -83,7 +80,6 @@ describe('banner', function () {
             .helper()
             .parse(argv('abc', '-H'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(7);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
     });
 
@@ -100,7 +96,6 @@ describe('banner', function () {
             .method('def')
             .parse(argv('abc', 'def'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(2);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
     });
 
@@ -118,7 +113,6 @@ describe('banner', function () {
             .helper()
             .parse(argv('abc', 'def', '-H'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(10);
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
     });
 
@@ -131,6 +125,6 @@ describe('banner', function () {
  * @returns {RegExp}
  */
 function bannerReg(banner) {
-    return new RegExp('^' + string.escapeRegExp(banner) + '$', 'm');
+    return new RegExp('^' + string.escapeRegExp(banner) + '\n');
 }
 

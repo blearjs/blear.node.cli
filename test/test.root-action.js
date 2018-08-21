@@ -43,7 +43,6 @@ describe('root-action', function () {
             })
             .parse(argv('--abc', '人生'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.get()).toBe('');
     });
 
 });

@@ -38,8 +38,6 @@ describe('child-action', function () {
             })
             .parse(argv('abc', '--def'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(1);
-        expect(fakeConsole.get()).toBe('');
     });
 
     it('option', function (done) {
@@ -59,8 +57,6 @@ describe('child-action', function () {
             })
             .parse(argv('abc', '--abc', 'abc'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(1);
-        expect(fakeConsole.get()).toBe('');
     });
 
     it('option + method', function (done) {
@@ -81,8 +77,6 @@ describe('child-action', function () {
             })
             .parse(argv('abc', '--abc', 'abc', 'abc'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(1);
-        expect(fakeConsole.get()).toBe('');
     });
 
     it('option + method + parmas', function (done) {
@@ -103,8 +97,6 @@ describe('child-action', function () {
             })
             .parse(argv('abc', '--abc', 'abc', 'abc', 'abc'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(1);
-        expect(fakeConsole.get()).toBe('');
     });
 
     it('method action', function (done) {
@@ -127,8 +119,6 @@ describe('child-action', function () {
             })
             .parse(argv('abc', '--abc', 'abc', 'abc', 'abc'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(1);
-        expect(fakeConsole.get()).toBe('');
     });
 
     it('multiple method action', function (done) {
@@ -152,8 +142,6 @@ describe('child-action', function () {
             })
             .parse(argv('abc', '--abc', 'abc', 'def', 'abc'), options);
         console.log(fakeConsole.get());
-        expect(fakeConsole.lines()).toBe(1);
-        expect(fakeConsole.get()).toBe('');
     });
 
 });
