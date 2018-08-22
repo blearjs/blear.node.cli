@@ -11,7 +11,6 @@
 var Cli = require('../src/cli.class');
 var argv = require('./argv');
 var FakeConsole = require('./fake-console.class');
-var matchHelper = require('./match-helper');
 
 var options = {
     bin: 'bin',
@@ -46,7 +45,7 @@ describe('args', function () {
             .parse(argv('--opt1', '1', '--opt2'), options);
     });
 
-    it('字符串 必填', function (done) {
+    it('字符串 必填', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();
         var called = false;
@@ -70,21 +69,18 @@ describe('args', function () {
                 called = true;
             });
 
-        setTimeout(function () {
-            cli.parse(argv('--opt1', '1', '--opt2'), options);
-            console.log(fakeConsole.get());
-            expect(called).toBe(false);
-            expect(fakeConsole.get()).toBe('`opt2` parameter cannot be empty\n');
+        cli.parse(argv('--opt1', '1', '--opt2'), options);
+        console.log(fakeConsole.get());
+        expect(called).toBe(false);
+        expect(fakeConsole.get()).toBe('`opt2` parameter cannot be empty\n');
 
-            fakeConsole.clear();
-            cli.parse(argv('--opt1', '1', '--opt2', '2'), options);
-            console.log(fakeConsole.get());
-            expect(fakeConsole.get()).toBe('opt3 字段必填\n');
-            done();
-        }, 10);
+        fakeConsole.clear();
+        cli.parse(argv('--opt1', '1', '--opt2', '2'), options);
+        console.log(fakeConsole.get());
+        expect(fakeConsole.get()).toBe('opt3 字段必填\n');
     });
 
-    it('method options', function (done) {
+    it('method options', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();
         var called = false;
@@ -105,13 +101,60 @@ describe('args', function () {
                 called = true;
             });
 
-        setTimeout(function () {
-            cli.parse(argv('cmd1', 'method1', '--opt2'), options);
-            console.log(fakeConsole.get());
-            expect(called).toBe(false);
-            expect(fakeConsole.get()).toBe('`opt2` parameter cannot be empty\n');
-            done();
-        }, 10);
+        cli.parse(argv('cmd1', 'method1', '--opt2'), options);
+        console.log(fakeConsole.get());
+        expect(called).toBe(false);
+        expect(fakeConsole.get()).toBe('`opt2` parameter cannot be empty\n');
+    });
+
+    it('多个 option', function () {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+        var called = false;
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1', {
+                type: 'string',
+                required: true
+            })
+            .option('opt2', {
+                type: 'string',
+                required: true
+            })
+            .action(function (args) {
+                called = true;
+            });
+
+        cli.parse(argv(), options);
+        console.log(fakeConsole.get());
+        expect(called).toBe(false);
+        expect(fakeConsole.get()).toBe('`opt1` parameter cannot be empty\n');
+    });
+
+    it('布尔类型', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1', {
+                required: true,
+                type: 'boolean'
+            })
+            .option('opt2', {
+                required: true,
+                type: 'boolean'
+            })
+            .action(function (args) {
+                console.log(args);
+                expect(args.opt1).toBe(true);
+                expect(args.opt2).toBe(true);
+                done();
+            });
+        cli.parse(argv('--opt1', 'abc', '--opt2'), options);
     });
 
 });

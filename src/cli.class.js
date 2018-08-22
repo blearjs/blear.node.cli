@@ -343,10 +343,6 @@ var CLI = Class.extend({
 
             var broken = false;
             object.each(options, function (key, option) {
-                if (broken === true) {
-                    return false;
-                }
-
                 if (key === 'help' || key === 'version') {
                     return;
                 }
