@@ -264,21 +264,14 @@ var CLI = Class.extend({
     parse: function (argv, options) {
         var args = access.args(arguments);
 
-        switch (args.length) {
-            case 0:
-                argv = process.argv;
+        if (args.length === 1) {
+            if (typeis.Array(args[0])) {
+                argv = args[0];
                 options = {};
-                break;
-
-            case 1:
-                if (typeis.Array(args[0])) {
-                    argv = args[0];
-                    options = {};
-                } else {
-                    options = args[0];
-                    argv = process.argv;
-                }
-                break;
+            } else {
+                options = args[0];
+                argv = process.argv;
+            }
         }
 
         if (!options.package) {
@@ -309,16 +302,20 @@ var CLI = Class.extend({
      */
     exec: function (command, method, params) {
         var commander = command ? this[_commanderMap][command] : this[_rootCommander];
-        var args = {};
 
+        // 子命令未配置
+        /* istanbul ignore if */
         if (!commander) {
-            throw new Error('the `' + command + '` command is not configured');
+            return;
         }
 
+        // 根命令未配置
+        /* istanbul ignore if */
         if (!commander.commandOptions) {
-            throw new Error('the root command is not configured');
+            return;
         }
 
+        var args = {};
         var commanderOptions = commander.commandOptions;
         var helpOption = commanderOptions.help;
         var versionOPtion = commanderOptions.version;

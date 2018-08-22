@@ -131,35 +131,6 @@ describe('boundary', function () {
         }).toThrowError('the `error` parameter must be a function');
     });
 
-    it('no-root-command', function () {
-        var cli = new Cli();
-
-        expect(function () {
-            cli.parse(argv(), {
-                package: {
-                    version: '1.0.0'
-                }
-            });
-        }).toThrowError('the root command is not configured');
-    });
-
-    it('no-child-command', function () {
-        var cli = new Cli();
-
-        expect(function () {
-            cli
-                .command()
-                .action(function () {
-                    cli.exec('abc');
-                })
-                .parse(argv(), {
-                    package: {
-                        version: '1.0.0'
-                    }
-                });
-        }).toThrowError('the `abc` command is not configured');
-    });
-
     it('option-for-unconfigure-method', function () {
         var cli = new Cli();
 
