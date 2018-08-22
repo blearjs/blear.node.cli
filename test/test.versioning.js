@@ -62,10 +62,18 @@ describe('versioning', function () {
 
         setTimeout(function () {
             console.log(fakeConsole.get());
-            matchHelper(fakeConsole, [
-                /^local version 1\.0\.0$/,
-                /^update available 1\.0\.0 → [\d.]+$/
-            ]);
+
+            if (fakeConsole.lines() === 2) {
+                matchHelper(fakeConsole, [
+                    /^local version 1\.0\.0$/
+                ]);
+            } else if (fakeConsole.lines() === 3) {
+                matchHelper(fakeConsole, [
+                    /^local version 1\.0\.0$/,
+                    /^update available 1\.0\.0 → [\d.]+$/
+                ]);
+            }
+
             done();
         }, 2000);
     });

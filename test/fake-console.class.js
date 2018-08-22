@@ -34,6 +34,14 @@ var FakeConsole = Class.extend({
         this.output = '';
     },
 
+    /**
+     * 行数
+     * @returns {number}
+     */
+    lines: function () {
+        return this.output.split(/\n/g).length;
+    },
+
     print: function () {
         this.output += util.format.apply(util, arguments) + '\n';
     },
