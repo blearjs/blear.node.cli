@@ -22,6 +22,11 @@ var minimist = require('minimist');
 
 var defaults = {
     /**
+     * 检查仓库，用户版本号检测
+     */
+    registry: 'http://registry.npm.taobao.org/',
+
+    /**
      * 键显示的长度
      * @type number
      */
@@ -726,17 +731,18 @@ prot[_optionAlias] = function (option) {
     });
 };
 
+/**
+ * 版本检查
+ */
 prot[_checkVersion] = function () {
     var the = this;
     var pkg = this[_options].package;
-    /**
-     * 版本检查
-     * @param pkg
-     */
+
     this.console.loading();
     request({
-        url: 'http://registry.npm.taobao.org/' + pkg.name
+        url: this[_options].registry + pkg.name
     }, function (err, body) {
+        /* istanbul ignore if */
         if (err) {
             the.console.loadingEnd();
             return
@@ -745,7 +751,9 @@ prot[_checkVersion] = function () {
         try {
             var json = JSON.parse(body);
         } catch (err) {
+            /* istanbul ignore next */
             the.console.loadingEnd();
+            /* istanbul ignore next */
             return;
         }
 
@@ -761,13 +769,14 @@ prot[_checkVersion] = function () {
         if (version.lt(currentVersion, latestVersion)) {
             the.console.log(
                 the.console.pretty(
-                    'Update available',
+                    'update available',
                     currentVersion,
                     '→',
                     latestVersion,
                     [
                         'bold',
-                        'red'
+                        'redBG',
+                        'white'
                     ]
                 )
             );

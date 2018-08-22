@@ -12,6 +12,7 @@ var Cli = require('../src/cli.class');
 var argv = require('./argv');
 var FakeConsole = require('./fake-console.class');
 var matchHelper = require('./match-helper');
+var string = require('blear.utils.string');
 
 var options = {
     bin: 'bin',
@@ -228,5 +229,40 @@ describe('helper-root-command', function () {
         matchHelper(fakeConsole, rules);
     });
 
+    it('key 过长', function () {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .usage(longStr('a'), longStr('b'))
+            .usage(longStr('c'), longStr('d'))
+            .option(longStr('e'), longStr('f'))
+            .helper();
+
+        var rules = [
+            /^\s{2}Usages:\s*$/,
+            /^\s{2}a+$/,
+            /^\s{2}\s+b+$/,
+            /^\s{2}c+$/,
+            /^\s{2}\s+d+$/,
+            /^$/,
+            /^\s{2}Options:\s*$/,
+            /^\s{2}--e+\s*$/,
+            /^\s+f+$/,
+            /^\s{2}--help, -h, -H\s+print help information$/
+        ];
+
+        cli.parse(argv('--help'), options);
+        console.log(fakeConsole.get());
+        matchHelper(fakeConsole, rules);
+    });
+
 });
+
+
+function longStr(str) {
+    return string.repeat(str, Math.round(Math.random() * 100 + Cli.defaults.keyLength));
+}
 
