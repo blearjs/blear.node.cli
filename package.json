@@ -1,6 +1,6 @@
 {
   "name": "blear.node.cli",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "node 命令行",
   "scripts": {
     "live": "browser-sync start --config bs-config.js",
