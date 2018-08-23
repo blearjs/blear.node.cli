@@ -347,33 +347,55 @@ var CLI = Class.extend({
                     return;
                 }
 
-                var val = null;
+                var val = undefined;
+                var expectType = option.type;
 
                 array.each(option.keys, function (index, k) {
-                    var v = the[_argv][k];
+                    var v1 = the[_argv][k];
+                    var actualType = typeis(v1);
 
-                    if (v === undefined) {
+                    if (actualType === 'undefined') {
                         return;
                     }
 
-                    if (option.type === 'boolean') {
-                        v = Boolean(v);
-                    } else {
-                        if (v === true) {
-                            v = '';
-                        }
+                    switch (expectType) {
+                        case 'boolean':
+                            val = Boolean(v1);
+                            break;
 
-                        v = string.ify(v);
+                        case 'string':
+                            switch (actualType) {
+                                case 'array':
+                                    val = v1[0];
+                                    break;
+
+                                case 'boolean':
+                                    val = '';
+                                    break;
+                            }
+                            val = string.ify(v2);
+                            break;
+
+                        case 'array':
+                            switch (actualType) {
+                                case 'string':
+                                    val = [v1];
+                                    break;
+
+                                case 'boolean':
+                                    val = [];
+                                    break;
+                            }
+                            break;
                     }
 
-                    if (typeis(v) === option.type) {
+                    if (typeis(val) === expectType) {
                         key = option._keyMap[k];
-                        val = v;
                         return false;
                     }
                 });
 
-                val = val || option.default;
+                val = val === undefined ? option.default : val;
                 val = option.transform(val, args, method);
                 args[string.humprize(key)] = val;
 
@@ -627,7 +649,19 @@ prot[_optionLimit] = function (option) {
     option.describe = option.describe || '';
 
     if (typeis.Undefined(option.default)) {
-        option.default = option.type === 'boolean' ? false : '';
+        switch (option.type) {
+            case 'boolean':
+                option.default = false;
+                break;
+
+            case 'array':
+                option.default = [];
+                break;
+
+            case 'string':
+                option.default = false;
+                break;
+        }
     }
 };
 

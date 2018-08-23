@@ -157,5 +157,39 @@ describe('args', function () {
         cli.parse(argv('--opt1', 'abc', '--opt2'), options);
     });
 
+    it('数组类型', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1', {
+                type: 'array'
+            })
+            .action(function (args) {
+                console.log(args);
+                expect(args.opt1).toEqual([]);
+                done();
+            });
+        cli.parse(argv(), options);
+    });
+
+    it('多参值', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1')
+            .action(function (args) {
+                console.log(args);
+                expect(args.opt1).toEqual('abc');
+                done();
+            });
+        cli.parse(argv('--opt1', 'abc', '--opt1', 'def'), options);
+    });
+
 });
 
