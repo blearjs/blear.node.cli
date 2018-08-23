@@ -177,6 +177,60 @@ describe('args', function () {
         cli.parse(argv(), options);
     });
 
+    it('数组类型：1参0值', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1', {
+                type: 'array'
+            })
+            .action(function (args) {
+                console.log(args);
+                expect(args.opt1).toEqual(['']);
+                done();
+            });
+        cli.parse(argv('--opt1'), options);
+    });
+
+    it('数组类型：1参1值', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1', {
+                type: 'array'
+            })
+            .action(function (args) {
+                console.log(args);
+                expect(args.opt1).toEqual(['xxx']);
+                done();
+            });
+        cli.parse(argv('--opt1', 'xxx'), options);
+    });
+
+    it('数组类型：多参多值', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1', {
+                type: 'array'
+            })
+            .action(function (args) {
+                console.log(args);
+                expect(args.opt1).toEqual(['abc', 'def']);
+                done();
+            });
+        cli.parse(argv('--opt1', 'abc', '--opt1', 'def'), options);
+    });
+
     it('多参值', function (done) {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();

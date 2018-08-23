@@ -388,7 +388,7 @@ var CLI = Class.extend({
                                     break;
 
                                 case 'boolean':
-                                    v2 = [];
+                                    v2 = [''];
                                     break;
                             }
                             break;
