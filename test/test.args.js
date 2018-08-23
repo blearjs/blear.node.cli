@@ -37,6 +37,8 @@ describe('args', function () {
                 type: 'string'
             })
             .action(function (args) {
+                console.log('args');
+                console.log(args);
                 expect(args.opt1).toBe('1');
                 expect(args.opt2).toBe('');
                 expect(args.opt3).toBe('');

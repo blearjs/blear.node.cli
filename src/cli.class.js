@@ -352,7 +352,12 @@ var CLI = Class.extend({
 
                 array.each(option.keys, function (index, k) {
                     var v1 = the[_argv][k];
+                    var v2 = v1;
                     var actualType = typeis(v1);
+
+                    // console.log(k, v1);
+                    // console.log('expectType', expectType);
+                    // console.log('actualType', actualType);
 
                     if (actualType === 'undefined') {
                         return;
@@ -360,37 +365,38 @@ var CLI = Class.extend({
 
                     switch (expectType) {
                         case 'boolean':
-                            val = Boolean(v1);
+                            v2 = Boolean(v1);
                             break;
 
                         case 'string':
                             switch (actualType) {
                                 case 'array':
-                                    val = v1[0];
+                                    v2 = v1[0];
                                     break;
 
                                 case 'boolean':
-                                    val = '';
+                                    v2 = '';
                                     break;
                             }
-                            val = string.ify(v2);
+                            v2 = string.ify(v2);
                             break;
 
                         case 'array':
                             switch (actualType) {
                                 case 'string':
-                                    val = [v1];
+                                    v2 = [v1];
                                     break;
 
                                 case 'boolean':
-                                    val = [];
+                                    v2 = [];
                                     break;
                             }
                             break;
                     }
 
-                    if (typeis(val) === expectType) {
+                    if (typeis(v2) === expectType) {
                         key = option._keyMap[k];
+                        val = v2;
                         return false;
                     }
                 });
@@ -399,7 +405,12 @@ var CLI = Class.extend({
                 val = option.transform(val, args, method);
                 args[string.humprize(key)] = val;
 
-                if (option.type === 'string' && option.required === true && val.length === 0) {
+                if (
+                    // 字符串 || 数组
+                    (expectType === 'string' || expectType === 'array') &&
+                    // 空字符串 || 空数组
+                    option.required === true && val.length === 0
+                ) {
                     broken = true;
                     commander.commandError.call(the, key, args, option, method);
                     return false;
@@ -659,7 +670,7 @@ prot[_optionLimit] = function (option) {
                 break;
 
             case 'string':
-                option.default = false;
+                option.default = '';
                 break;
         }
     }
