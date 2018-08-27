@@ -273,19 +273,17 @@ var CLI = Class.extend({
             }
         });
         var command = this[_argv]._.shift();
-        var method = this[_argv]._.shift();
         var params = this[_argv]._;
-        this.exec(command, method, params);
+        this.exec(command, params);
     },
 
     /**
      * 执行命令
      * @param command {string | undefined}
-     * @param [method] {string}
      * @param [params] {array}
      * @returns {*}
      */
-    exec: function (command, method, params) {
+    exec: function (command, params) {
         var commander = command ? this[_commanderMap][command] : this[_rootCommander];
 
         // 子命令未配置
@@ -306,6 +304,7 @@ var CLI = Class.extend({
         var versionOPtion = commanderOptions.version;
         var the = this;
         var methodOptions;
+        var method = params[0];
 
         if (method) {
             methodOptions = commander.methodOptionsMap[method];
@@ -313,12 +312,12 @@ var CLI = Class.extend({
 
         if (this[_argv].help && helpOption) {
             this[_slogan]();
-            return helpOption.action.call(this, command, method, params);
+            return helpOption.action.call(this, command, params);
         }
 
         if (this[_argv].version && versionOPtion) {
             this[_slogan]();
-            return versionOPtion.action.call(this, command, method, params);
+            return versionOPtion.action.call(this, command, params);
         }
 
         var eachOptions = function (options) {
@@ -339,10 +338,6 @@ var CLI = Class.extend({
                     var v1 = the[_argv][k];
                     var v2 = v1;
                     var actualType = typeis(v1);
-
-                    // console.log(k, v1);
-                    // console.log('expectType', expectType);
-                    // console.log('actualType', actualType);
 
                     if (actualType === 'undefined') {
                         return;
@@ -423,7 +418,7 @@ var CLI = Class.extend({
         }
 
         this[_slogan]();
-        commander.commandAction.call(this, args, method, params);
+        commander.commandAction.call(this, args, params);
     },
 
     /**

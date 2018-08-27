@@ -30,9 +30,8 @@ describe('child-action', function () {
         cli
             .command()
             .command('abc')
-            .action(function (args, method, params) {
+            .action(function (args, params) {
                 expect(args).toEqual({});
-                expect(method).toEqual(undefined);
                 expect(params).toEqual([]);
                 done();
             })
@@ -49,9 +48,8 @@ describe('child-action', function () {
             .command()
             .command('abc')
             .option('abc')
-            .action(function (args, method, params) {
+            .action(function (args, params) {
                 expect(args.abc).toEqual('abc');
-                expect(method).toEqual(undefined);
                 expect(params).toEqual([]);
                 done();
             })
@@ -69,10 +67,9 @@ describe('child-action', function () {
             .command('abc')
             .option('abc')
             .method('abc')
-            .action(function (args, method, params) {
+            .action(function (args, params) {
                 expect(args.abc).toEqual('abc');
-                expect(method).toEqual('abc');
-                expect(params).toEqual([]);
+                expect(params).toEqual(['abc']);
                 done();
             })
             .parse(argv('abc', '--abc', 'abc', 'abc'), options);
@@ -89,10 +86,9 @@ describe('child-action', function () {
             .command('abc')
             .option('abc')
             .method('abc')
-            .action(function (args, method, params) {
+            .action(function (args, params) {
                 expect(args.abc).toEqual('abc');
-                expect(method).toEqual('abc');
-                expect(params).toEqual(['abc']);
+                expect(params).toEqual(['abc', 'abc']);
                 done();
             })
             .parse(argv('abc', '--abc', 'abc', 'abc', 'abc'), options);
@@ -108,13 +104,13 @@ describe('child-action', function () {
             .command()
             .command('abc')
             .option('abc')
-            .method('abc')
-            .action(function (args, method, params) {
+            .action(function (args, params) {
 
             })
-            .action('abc', function (args, params) {
+            .method('abc')
+            .action(function (args, params) {
                 expect(args.abc).toEqual('abc');
-                expect(params).toEqual(['abc']);
+                expect(params).toEqual(['abc', 'abc']);
                 done();
             })
             .parse(argv('abc', '--abc', 'abc', 'abc', 'abc'), options);
@@ -130,14 +126,14 @@ describe('child-action', function () {
             .command()
             .command('abc')
             .option('abc')
-            .method('abc')
-            .method('def')
-            .action(function (args, method, params) {
+            .action(function (args, params) {
 
             })
-            .action('def', function (args, params) {
+            .method('abc')
+            .method('def')
+            .action(function (args, params) {
                 expect(args.abc).toEqual('abc');
-                expect(params).toEqual(['abc']);
+                expect(params).toEqual(['def', 'abc']);
                 done();
             })
             .parse(argv('abc', '--abc', 'abc', 'def', 'abc'), options);

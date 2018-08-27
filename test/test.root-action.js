@@ -32,12 +32,11 @@ describe('root-action', function () {
             .option('abc')
             .option('qwe')
             .option('xyz')
-            .action(function (args, method, parmas) {
-                expect(arguments.length).toBe(3);
+            .action(function (args, parmas) {
+                expect(arguments.length).toBe(2);
                 expect(args.abc).toBe('人生');
                 expect(args.qwe).toBe('');
                 expect(args.xyz).toBe('');
-                expect(method).toBe(undefined);
                 expect(parmas).toEqual([]);
                 done();
             })
