@@ -119,7 +119,7 @@ var CLI = Class.extend({
         return this.option('version', {
             alias: ['v', 'V'],
             describe: describe || 'print version information',
-            for: null,
+            _for: null,
             action: this.version
         });
     },
@@ -133,7 +133,7 @@ var CLI = Class.extend({
         return this.option('help', {
             alias: ['h', 'H'],
             describe: describe || 'print help information',
-            for: null,
+            _for: null,
             action: this.help
         });
     },
@@ -175,7 +175,7 @@ var CLI = Class.extend({
     /**
      * 配置参数
      * @param key
-     * @param [option] {object | string} 配置，或描述
+     * @param [option] {string | object} 配置，或描述
      * @param [option.alias] {string | array} 别名，可以是多个
      * @param [option.default] {string} 默认值
      * @param [option.type] {string} 类型，目前仅支持 string、boolean、array
@@ -183,7 +183,6 @@ var CLI = Class.extend({
      * @param [option.describe] {string} 描述
      * @param [option.required=false] {boolean} 是否必填
      * @param [option.message] {string} 参数不符合要求时显示
-     * @param [option.for] {string} 执行具体 method，为 null 指向 command
      * @returns {CLI}
      */
     option: function (key, option) {
@@ -657,33 +656,19 @@ prot[_optionLimit] = function (option) {
 };
 
 /**
- * 处理 option.for
+ * 处理 option 指向
  * @param option
  */
 prot[_optionFor] = function (option) {
     var commander = this[_currentCommander];
     var key = option.key;
-
-    if (!typeis.Null(option.for) && !typeis.String(option.for)) {
-        if (this[_currentMethod]) {
-            option.for = this[_currentMethod].method;
-        } else {
-            option.for = null;
-        }
-    }
-
-    var optionFor = option.for;
-
-    // 有独立指向
     var commandName = commander.command;
-    if (optionFor !== null) {
+    var optionFor = option._for = this[_currentMethod] && option._for === undefined
+        ? this[_currentMethod].method
+        : null;
+
+    if (optionFor) {
         var method = this[_currentMethodsMap][optionFor];
-
-        if (!method) {
-            throw new Error('the `' + optionFor + '` method of the `' + commandName + '` command ' +
-                'pointed to by `option` does not exist');
-        }
-
         var methodName = method.method;
         var methodOptions = commander.methodOptionsMap[methodName];
 
@@ -698,7 +683,8 @@ prot[_optionFor] = function (option) {
     }
 
     if (this[_currentCommandOptions][key]) {
-        throw new Error('the `' + key + '` option of the `' + commandName + '` command already exists');
+        throw new Error('the `' + key + '` option of the `' +
+            commandName + '` command already exists');
     }
 
     // add option
@@ -711,17 +697,16 @@ prot[_optionFor] = function (option) {
  */
 prot[_optionAlias] = function (option) {
     var key = option.key;
-    var optionFor = option.for;
+    var optionFor = option._for;
     var commander = this[_currentCommander];
-    var aliases;
 
     if (typeis.String(option.alias)) {
         option.alias = [option.alias];
     }
 
-    option.aliases = option.alias || [];
-    option.keys = [key].concat(option.aliases);
-    option._keys = ['--' + key].concat(option.aliases.map(function (key) {
+    var aliases = option.alias || [];
+    option.keys = [key].concat(aliases);
+    option._keys = ['--' + key].concat(aliases.map(function (key) {
         return '-' + key;
     }));
     option._keyMap = array.reduce(option.keys, function (p, c, i) {

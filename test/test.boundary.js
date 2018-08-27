@@ -97,24 +97,6 @@ describe('boundary', function () {
         }).toThrowError('the `error` parameter must be a function');
     });
 
-    it('option-for-unconfigure-method', function () {
-        var cli = new Cli();
-
-        expect(function () {
-            cli
-                .command()
-                .command('abc')
-                .option('def', {
-                    for: 'xyz'
-                })
-                .parse(argv(), {
-                    package: {
-                        version: '1.0.0'
-                    }
-                });
-        }).toThrowError('the `xyz` method of the `abc` command pointed to by `option` does not exist');
-    });
-
     it('option-for-duplicate-method', function () {
         var cli = new Cli();
 

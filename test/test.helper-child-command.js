@@ -146,8 +146,8 @@ describe('helper-child-command', function () {
             .banner(banner)
             .command()
             .command('abc')
-            .method('method1')
-            .helper();
+            .helper()
+            .method('method1');
 
         cli.parse(argv('--help', 'abc'), options);
         console.log(fakeConsole.get());
@@ -180,9 +180,9 @@ describe('helper-child-command', function () {
             .banner(banner)
             .command()
             .command('abc')
+            .helper()
             .method('method1')
-            .method('method2', '第2个方法')
-            .helper();
+            .method('method2', '第2个方法');
 
         cli.parse(argv('--help', 'abc'), options);
         console.log(fakeConsole.get());
@@ -378,9 +378,9 @@ describe('helper-child-command', function () {
             .command()
             .command('abc')
             .option('xyz', '123')
+            .helper()
             .method('method1')
-            .option('wer', '456')
-            .helper();
+            .option('wer', '456');
 
         cli.parse(argv('--help', 'abc'), options);
         console.log(fakeConsole.get());
