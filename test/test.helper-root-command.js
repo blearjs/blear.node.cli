@@ -263,6 +263,6 @@ describe('helper-root-command', function () {
 
 
 function longStr(str) {
-    return string.repeat(str, Math.round(Math.random() * 100 + Cli.defaults.keyLength));
+    return string.repeat(str, Math.round(Math.random() * 100 + Cli.defaults.breakLength));
 }
 
