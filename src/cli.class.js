@@ -70,10 +70,10 @@ var CLI = Class.extend({
     /**
      * 新增命令
      * @param [command] {string} 命令
-     * @param [describe] {string} 描述
+     * @param [description] {string} 描述
      * @returns {CLI}
      */
-    command: function (command, describe) {
+    command: function (command, description) {
         if (command) {
             if (this[_commanderMap][command]) {
                 throw new Error('cannot add the `' + command + '` method with the same name');
@@ -97,7 +97,7 @@ var CLI = Class.extend({
             // ignore
         };
         this[_currentCommander].commandError = this[_error];
-        this[_currentCommander].commandDescribe = describe || '';
+        this[_currentCommander].commandDescription = description || '';
         this[_currentCommander].commandUsageList = [];
 
         this[_currentCommander].methodOptionsMap = {};
@@ -112,13 +112,13 @@ var CLI = Class.extend({
 
     /**
      * 版本配置
-     * @param [describe] {string}
+     * @param [description] {string}
      * @returns {CLI}
      */
-    versioning: function (describe) {
+    versioning: function (description) {
         return this.option('version', {
             alias: ['v', 'V'],
-            describe: describe || 'print version information',
+            description: description || 'print version information',
             _for: null,
             action: this.version
         });
@@ -126,13 +126,13 @@ var CLI = Class.extend({
 
     /**
      * 帮助配置
-     * @param [describe] {string}
+     * @param [description] {string}
      * @returns {CLI}
      */
-    helper: function (describe) {
+    helper: function (description) {
         return this.option('help', {
             alias: ['h', 'H'],
-            describe: describe || 'print help information',
+            description: description || 'print help information',
             _for: null,
             action: this.help
         });
@@ -141,13 +141,13 @@ var CLI = Class.extend({
     /**
      * 添加用法
      * @param example {string}
-     * @param [describe] {string}
+     * @param [description] {string}
      * @returns {CLI}
      */
-    usage: function (example, describe) {
+    usage: function (example, description) {
         this[_currentCommander].commandUsageList.push({
             example: example,
-            describe: describe || ''
+            description: description || ''
         });
         return this;
     },
@@ -155,17 +155,17 @@ var CLI = Class.extend({
     /**
      * 添加方法
      * @param method
-     * @param [describe]
+     * @param [description]
      * @returns {CLI}
      */
-    method: function (method, describe) {
+    method: function (method, description) {
         if (this[_currentCommander].root) {
             throw new Error('cannot add method to root command');
         }
 
         this[_currentMethodsMap][method] = this[_currentMethod] = {
             method: method,
-            describe: describe || ''
+            description: description || ''
         };
         this[_currentCommander].methodOptionsMap[method] = {};
         this[_currentCommander].methodOptionsAliasesMap[method] = {};
@@ -180,7 +180,7 @@ var CLI = Class.extend({
      * @param [option.default] {string} 默认值
      * @param [option.type] {string} 类型，目前仅支持 string、boolean、array
      * @param [option.transform] {function} 转换
-     * @param [option.describe] {string} 描述
+     * @param [option.description] {string} 描述
      * @param [option.required=false] {boolean} 是否必填
      * @param [option.message] {string} 参数不符合要求时显示
      * @returns {CLI}
@@ -188,7 +188,7 @@ var CLI = Class.extend({
     option: function (key, option) {
         if (typeis.String(option)) {
             option = {
-                describe: option
+                description: option
             };
         }
 
@@ -241,7 +241,9 @@ var CLI = Class.extend({
      * 解析入参
      * @param [argv]
      * @param [options]
+     * @param [options.registry]
      * @param [options.breakLength]
+     * @param [options.bin]
      * @param [options.package]
      * @returns {CLI}
      */
@@ -273,160 +275,15 @@ var CLI = Class.extend({
         });
         var command = this[_argv]._.shift();
         var params = this[_argv]._;
-        this.exec(command, params);
-    },
-
-    /**
-     * 执行命令
-     * @param command {string | undefined}
-     * @param [params] {array}
-     * @returns {*}
-     */
-    exec: function (command, params) {
-        var commander = command ? this[_commanderMap][command] : this[_rootCommander];
-
-        // 子命令未配置
-        /* istanbul ignore if */
-        if (!commander) {
-            return;
-        }
-
-        // 根命令未配置
-        /* istanbul ignore if */
-        if (!commander.commandOptions) {
-            return;
-        }
-
-        var args = {};
-        var commanderOptions = commander.commandOptions;
-        var helpOption = commanderOptions.help;
-        var versionOPtion = commanderOptions.version;
-        var the = this;
-        var methodOptions;
-        var method = params[0];
-
-        if (method) {
-            methodOptions = commander.methodOptionsMap[method];
-        }
-
-        if (this[_argv].help && helpOption) {
-            this[_slogan]();
-            return helpOption.action.call(this, command, params);
-        }
-
-        if (this[_argv].version && versionOPtion) {
-            this[_slogan]();
-            return versionOPtion.action.call(this, command, params);
-        }
-
-        var eachOptions = function (options) {
-            if (!options) {
-                return false;
-            }
-
-            var broken = false;
-            object.each(options, function (key, option) {
-                if (key === 'help' || key === 'version') {
-                    return;
-                }
-
-                var val = undefined;
-                var expectType = option.type;
-
-                array.each(option.keys, function (index, k) {
-                    var v1 = the[_argv][k];
-                    var v2 = v1;
-                    var actualType = typeis(v1);
-
-                    if (actualType === 'undefined') {
-                        return;
-                    }
-
-                    switch (expectType) {
-                        case 'boolean':
-                            v2 = Boolean(v1);
-                            break;
-
-                        case 'string':
-                            switch (actualType) {
-                                case 'array':
-                                    v2 = v1[0];
-                                    break;
-
-                                case 'boolean':
-                                    v2 = '';
-                                    break;
-                            }
-                            v2 = string.ify(v2);
-                            break;
-
-                        case 'array':
-                            switch (actualType) {
-                                case 'string':
-                                    v2 = [v1];
-                                    break;
-
-                                case 'boolean':
-                                    v2 = [''];
-                                    break;
-                            }
-                            break;
-                    }
-
-                    if (typeis(v2) === expectType) {
-                        key = option._keyMap[k];
-                        val = v2;
-                        return false;
-                    }
-                });
-
-                val = val === undefined ? option.default : val;
-                val = option.transform(val, args, params);
-                args[string.humprize(key)] = val;
-
-                if (
-                    // 字符串 || 数组
-                    (expectType === 'string' || expectType === 'array') &&
-                    // 空字符串 || 空数组
-                    option.required === true && val.length === 0
-                ) {
-                    broken = true;
-                    commander.commandError.call(the, key, args, option, params);
-                    return false;
-                }
-            });
-            return broken;
-        };
-
-        if (eachOptions(commanderOptions)) {
-            return false;
-        }
-
-        if (eachOptions(methodOptions)) {
-            return false;
-        }
-
-        if (method) {
-            var methodAction = commander.methodActionsMap[method];
-
-            if (typeis.Function(methodAction)) {
-                this[_slogan]();
-                methodAction.call(this, args, params);
-                return;
-            }
-        }
-
-        this[_slogan]();
-        commander.commandAction.call(this, args, params);
+        this[_exec](command, params);
     },
 
     /**
      * 打印帮助信息
-     * @param command
-     * @param [method]
-     * @param [params]
+     * @param command {string} 命令
+     * @param [params] {array} 其他参数
      */
-    help: function (command, method, params) {
+    help: function (command, params) {
         var the = this;
         var commander = this[_commanderMap][command] || this[_rootCommander];
         var commanders = commander === this[_rootCommander] ? this[_commanderList] : [commander];
@@ -448,12 +305,14 @@ var CLI = Class.extend({
                 ), titleColors
             );
         };
+        params = params || [];
+        var method = params[0];
 
         // print usage
         var usagePrints = [];
         array.each(commanders, function (index, commander) {
             array.each(commander.commandUsageList, function (index, usage) {
-                usagePrints.push([usage.example, usage.describe]);
+                usagePrints.push([usage.example, usage.description]);
             });
         });
         if (usagePrints.length) {
@@ -468,7 +327,7 @@ var CLI = Class.extend({
                 return;
             }
 
-            commandPrints.push([commander.command, commander.commandDescribe]);
+            commandPrints.push([commander.command, commander.commandDescription]);
         });
         if (commandPrints.length) {
             if (usagePrints.length) {
@@ -486,13 +345,13 @@ var CLI = Class.extend({
             methodDetail = commander.methodsMap[method];
 
             if (methodDetail) {
-                methodPrints.push([methodDetail.method, methodDetail.describe]);
+                methodPrints.push([methodDetail.method, methodDetail.description]);
             }
         }
 
         if (!methodDetail) {
             object.each(commander.methodsMap, function (_, detail) {
-                methodPrints.push([detail.method, detail.describe]);
+                methodPrints.push([detail.method, detail.description]);
             });
         }
 
@@ -508,12 +367,12 @@ var CLI = Class.extend({
         // print options
         var optionsPrints = [];
         object.each(commander.commandOptions, function (key, option) {
-            optionsPrints.push([option._keys.join(', '), option.describe]);
+            optionsPrints.push([option._keys.join(', '), option.description]);
         });
         if (method) {
             var methodOptions = commander.methodOptionsMap[method];
             object.each(methodOptions, function (key, option) {
-                optionsPrints.push([option._keys.join(', '), option.describe]);
+                optionsPrints.push([option._keys.join(', '), option.description]);
             });
         }
         if (optionsPrints.length) {
@@ -548,6 +407,7 @@ var _currentMethodsMap = sole();
 var _currentCommandOptions = sole();
 var _argv = sole();
 var _slogan = sole();
+var _exec = sole();
 var _print = sole();
 var _error = sole();
 var _optionLimit = sole();
@@ -559,6 +419,150 @@ prot[_slogan] = function () {
     if (this[_banner]) {
         this.console.log(this[_banner]);
     }
+};
+
+/**
+ * 执行命令
+ * @param command {string | undefined}
+ * @param [params] {array}
+ * @returns {*}
+ */
+prot[_exec] = function (command, params) {
+    var commander = command ? this[_commanderMap][command] : this[_rootCommander];
+
+    // 子命令未配置
+    /* istanbul ignore if */
+    if (!commander) {
+        return;
+    }
+
+    // 根命令未配置
+    /* istanbul ignore if */
+    if (!commander.commandOptions) {
+        return;
+    }
+
+    var args = {};
+    var commanderOptions = commander.commandOptions;
+    var helpOption = commanderOptions.help;
+    var versionOPtion = commanderOptions.version;
+    var the = this;
+    var methodOptions;
+    var method = params[0];
+
+    if (method) {
+        methodOptions = commander.methodOptionsMap[method];
+    }
+
+    if (this[_argv].help && helpOption) {
+        this[_slogan]();
+        return helpOption.action.call(this, command, params);
+    }
+
+    if (this[_argv].version && versionOPtion) {
+        this[_slogan]();
+        return versionOPtion.action.call(this, command, params);
+    }
+
+    var eachOptions = function (options) {
+        if (!options) {
+            return false;
+        }
+
+        var broken = false;
+        object.each(options, function (key, option) {
+            if (key === 'help' || key === 'version') {
+                return;
+            }
+
+            var val = undefined;
+            var expectType = option.type;
+
+            array.each(option.keys, function (index, k) {
+                var v1 = the[_argv][k];
+                var v2 = v1;
+                var actualType = typeis(v1);
+
+                if (actualType === 'undefined') {
+                    return;
+                }
+
+                switch (expectType) {
+                    case 'boolean':
+                        v2 = Boolean(v1);
+                        break;
+
+                    case 'string':
+                        switch (actualType) {
+                            case 'array':
+                                v2 = v1[0];
+                                break;
+
+                            case 'boolean':
+                                v2 = '';
+                                break;
+                        }
+                        v2 = string.ify(v2);
+                        break;
+
+                    case 'array':
+                        switch (actualType) {
+                            case 'string':
+                                v2 = [v1];
+                                break;
+
+                            case 'boolean':
+                                v2 = [''];
+                                break;
+                        }
+                        break;
+                }
+
+                if (typeis(v2) === expectType) {
+                    key = option._keyMap[k];
+                    val = v2;
+                    return false;
+                }
+            });
+
+            val = val === undefined ? option.default : val;
+            val = option.transform(val, args, params);
+            args[string.humprize(key)] = val;
+
+            if (
+                // 字符串 || 数组
+                (expectType === 'string' || expectType === 'array') &&
+                // 空字符串 || 空数组
+                option.required === true && val.length === 0
+            ) {
+                broken = true;
+                commander.commandError.call(the, key, args, option, params);
+                return false;
+            }
+        });
+        return broken;
+    };
+
+    if (eachOptions(commanderOptions)) {
+        return false;
+    }
+
+    if (eachOptions(methodOptions)) {
+        return false;
+    }
+
+    if (method) {
+        var methodAction = commander.methodActionsMap[method];
+
+        if (typeis.Function(methodAction)) {
+            this[_slogan]();
+            methodAction.call(this, args, params);
+            return;
+        }
+    }
+
+    this[_slogan]();
+    commander.commandAction.call(this, args, params);
 };
 
 /**
@@ -636,7 +640,7 @@ prot[_optionLimit] = function (option) {
     option.type = option.type || 'string';
     option.required = Boolean(option.required);
     option.message = option.message || '`' + key + '` parameter cannot be empty';
-    option.describe = option.describe || '';
+    option.description = option.description || '';
 
     if (typeis.Undefined(option.default)) {
         switch (option.type) {
