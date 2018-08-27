@@ -27,10 +27,10 @@ var defaults = {
     registry: 'http://registry.npm.taobao.org/',
 
     /**
-     * 键显示的长度
+     * 键单行显示的长度，超过的话值会顺延换行
      * @type number
      */
-    keyLength: 30,
+    breakLength: 30,
 
     /**
      * 命令名称
@@ -257,7 +257,7 @@ var CLI = Class.extend({
      * 解析入参
      * @param [argv]
      * @param [options]
-     * @param [options.keyLength]
+     * @param [options.breakLength]
      * @param [options.package]
      * @returns {CLI}
      */
@@ -590,12 +590,12 @@ prot[_slogan] = function () {
 prot[_print] = function (indentLength, list) {
     var the = this;
     var lines = [];
-    var keyLength = this[_options].keyLength;
+    var breakLength = this[_options].breakLength;
     var space = '  ';
     var spaceLen = space.length;
     var indent = string.repeat(' ', indentLength);
     // indent + space + key + space + val;
-    var valIndent = string.repeat(' ', indentLength + spaceLen + keyLength);
+    var valIndent = string.repeat(' ', indentLength + spaceLen + breakLength);
 
     array.each(list, function (index, line) {
         var key = line[0];
@@ -603,7 +603,7 @@ prot[_print] = function (indentLength, list) {
         var keyLen = key.length;
 
         // key 过长
-        if (keyLen > keyLength) {
+        if (keyLen > breakLength) {
             lines.push(
                 [
                     indent,
@@ -618,7 +618,7 @@ prot[_print] = function (indentLength, list) {
             lines.push(
                 [
                     indent,
-                    the.console.colors.bold(string.padEnd(key, keyLength, ' ')),
+                    the.console.colors.bold(string.padEnd(key, breakLength, ' ')),
                     space,
                     indentText(valIndent, val, false)
                 ].join('')
