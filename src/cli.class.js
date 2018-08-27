@@ -205,32 +205,18 @@ var CLI = Class.extend({
 
     /**
      * 执行动作
-     * @param [method] {string} 指定方法的动作
      * @param action {function} 动作
      * @returns {CLI}
      */
-    action: function (method, action) {
-        var args = access.args(arguments);
-
-        if (args.length === 1) {
-            action = args[0];
-            method = null;
-        }
-
-        if (this[_currentCommander].root && method) {
-            throw new Error('cannot add method action to root command');
-        }
-
+    action: function (action) {
         if (!typeis.Function(action)) {
             throw new Error('the `action` parameter must be a function');
         }
 
-        if (method) {
-            if (!this[_currentMethodsMap][method]) {
-                throw new Error('the `' + method + '` method of the `' + this[_currentCommander].command + '` command does not exist');
-            }
+        var method = this[_currentMethod];
 
-            this[_currentCommander].methodActionsMap[method] = action;
+        if (method) {
+            this[_currentCommander].methodActionsMap[method.method] = action;
         } else {
             this[_currentCommander].commandAction = action;
         }

@@ -67,23 +67,6 @@ describe('boundary', function () {
         }).toThrowError('cannot add method to root command');
     });
 
-    it('root-command-method-action', function () {
-        var cli = new Cli();
-
-        expect(function () {
-            cli
-                .command()
-                .action('abc', function () {
-
-                })
-                .parse(argv(), {
-                    package: {
-                        version: '1.0.0'
-                    }
-                });
-        }).toThrowError('cannot add method action to root command');
-    });
-
     it('unfunction-action', function () {
         var cli = new Cli();
 
@@ -97,23 +80,6 @@ describe('boundary', function () {
                     }
                 });
         }).toThrowError('the `action` parameter must be a function');
-    });
-
-    it('undefined-method-action', function () {
-        var cli = new Cli();
-
-        expect(function () {
-            cli
-                .command('abc')
-                .action('def', function () {
-
-                })
-                .parse(argv(), {
-                    package: {
-                        version: '1.0.0'
-                    }
-                });
-        }).toThrowError('the `def` method of the `abc` command does not exist');
     });
 
     it('unfunction-error', function () {
