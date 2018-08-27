@@ -100,7 +100,7 @@ describe('root-command', function () {
             .option('abc')
             .option('def', 'DEF')
             .option('xyz', {
-                describe: 'XYZ'
+                description: 'XYZ'
             })
             .parse(argv(), options);
         console.log(fakeConsole.get());
