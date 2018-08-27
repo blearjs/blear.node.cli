@@ -381,7 +381,7 @@ var CLI = Class.extend({
                 });
 
                 val = val === undefined ? option.default : val;
-                val = option.transform(val, args, method, params);
+                val = option.transform(val, args, params);
                 args[string.humprize(key)] = val;
 
                 if (
@@ -391,7 +391,7 @@ var CLI = Class.extend({
                     option.required === true && val.length === 0
                 ) {
                     broken = true;
-                    commander.commandError.call(the, key, args, option, method);
+                    commander.commandError.call(the, key, args, option, params);
                     return false;
                 }
             });
