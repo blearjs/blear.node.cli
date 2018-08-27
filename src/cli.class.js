@@ -401,7 +401,7 @@ var CLI = Class.extend({
                 });
 
                 val = val === undefined ? option.default : val;
-                val = option.transform(val, args, method);
+                val = option.transform(val, args, method, params);
                 args[string.humprize(key)] = val;
 
                 if (
