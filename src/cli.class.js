@@ -178,10 +178,9 @@ var CLI = Class.extend({
      * @param [option] {object | string} 配置，或描述
      * @param [option.alias] {string | array} 别名，可以是多个
      * @param [option.default] {string} 默认值
-     * @param [option.type] {string} 类型，目前仅支持 string、Boolean
+     * @param [option.type] {string} 类型，目前仅支持 string、boolean、array
      * @param [option.transform] {function} 转换
      * @param [option.describe] {string} 描述
-     * @param [option.action] {function} 执行动作
      * @param [option.required=false] {boolean} 是否必填
      * @param [option.message] {string} 参数不符合要求时显示
      * @param [option.for] {string} 执行具体 method，为 null 指向 command
