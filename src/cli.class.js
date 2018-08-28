@@ -460,6 +460,7 @@ prot[_exec] = function (command, params) {
 
     // 子命令未配置
     if (!commander) {
+        this[_slogan]();
         this[_guess].call(this, command);
         return;
     }
