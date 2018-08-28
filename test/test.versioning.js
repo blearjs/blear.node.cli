@@ -23,7 +23,7 @@ var options = {
 
 describe('versioning', function () {
 
-    it('notfound', function (done) {
+    it('not-found', function (done) {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();
 
@@ -40,12 +40,11 @@ describe('versioning', function () {
 
         setTimeout(function () {
             console.log(fakeConsole.get());
-            expect(fakeConsole.get()).toEqual('local version 1.2.3\n');
             done();
         }, 2000);
     });
 
-    it('found', function (done) {
+    it('update available', function (done) {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();
 
@@ -62,18 +61,27 @@ describe('versioning', function () {
 
         setTimeout(function () {
             console.log(fakeConsole.get());
+            done();
+        }, 2000);
+    });
 
-            if (fakeConsole.lines() === 2) {
-                matchHelper(fakeConsole, [
-                    /^local version 1\.0\.0$/
-                ]);
-            } else if (fakeConsole.lines() === 3) {
-                matchHelper(fakeConsole, [
-                    /^local version 1\.0\.0$/,
-                    /^update available 1\.0\.0 → [\d.]+$/
-                ]);
-            }
+    it('update up to date', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
 
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .versioning()
+            .parse(argv('-v'), {
+                package: {
+                    name: 'hei',
+                    version: '1.0.0'
+                }
+            });
+
+        setTimeout(function () {
+            console.log(fakeConsole.get());
             done();
         }, 2000);
     });

@@ -21,9 +21,6 @@ var url = require('blear.utils.url');
 var path = require('path');
 var minimist = require('minimist');
 
-var noop = function () {
-    // ignore
-};
 var defaults = {
     /**
      * 检查仓库，用户版本号检测
@@ -103,7 +100,7 @@ var Cli = Class.extend({
         this[_currentCommander].commandOptions = this[_currentCommandOptions] = {};
         this[_currentCommander].commandOptionsAliases = {};
         this[_currentCommander].commandAction = function () {
-            this.console.log('The `%s` command does nothing.', command);
+            this.console.error('the %s command does nothing', command ? '`' + command + '`' : 'root');
         };
         this[_currentCommander].commandError = this[_error];
         this[_currentCommander].commandDescription = description || '';

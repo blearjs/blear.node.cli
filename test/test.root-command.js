@@ -22,6 +22,18 @@ var options = {
 
 describe('root-command', function () {
 
+    it('no action', function () {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .parse(argv(), options);
+        console.log(fakeConsole.get());
+        expect(fakeConsole.get()).toEqual('the root command does nothing\n');
+    });
+
     it('default', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();

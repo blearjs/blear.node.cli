@@ -22,6 +22,19 @@ var options = {
 
 describe('child-command', function () {
 
+    it('no action', function () {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .command('abc')
+            .parse(argv('abc'), options);
+        console.log(fakeConsole.get());
+        expect(fakeConsole.get()).toEqual('the `abc` command does nothing\n');
+    });
+
     it('one command', function () {
         var cli = new Cli();
         var fakeConsole = new FakeConsole();

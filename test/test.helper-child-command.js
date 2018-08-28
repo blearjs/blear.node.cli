@@ -33,6 +33,9 @@ describe('helper-child-command', function () {
         cli.$$injectConsole$$(fakeConsole);
         cli
             .command()
+            .action(function () {
+
+            })
             .command('abc');
 
         cli.parse(argv('--help'), options);

@@ -33,7 +33,10 @@ describe('helper-root-command', function () {
 
         cli.$$injectConsole$$(fakeConsole);
         cli
-            .command();
+            .command()
+            .action(function () {
+
+            });
 
         cli.parse(argv('--help'), options);
         console.log(fakeConsole.get());
