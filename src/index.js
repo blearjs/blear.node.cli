@@ -9,7 +9,8 @@
 'use strict';
 
 
-var CLI = require('./cli.class');
+var Cli = require('./cli.class');
 
 
-module.exports = new CLI();
+module.exports = new Cli();
+module.exports.Cli = Cli;

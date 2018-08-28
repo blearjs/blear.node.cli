@@ -17,6 +17,7 @@ var typeis = require('blear.utils.typeis');
 var version = require('blear.utils.version');
 var console = require('blear.node.console');
 var request = require('blear.node.request');
+var url = require('blear.utils.url');
 var path = require('path');
 var minimist = require('minimist');
 
@@ -24,7 +25,7 @@ var defaults = {
     /**
      * 检查仓库，用户版本号检测
      */
-    registry: 'http://registry.npm.taobao.org/',
+    registry: 'https://registry.npm.taobao.org',
 
     /**
      * 键单行显示的长度，超过的话值会顺延换行
@@ -44,9 +45,10 @@ var defaults = {
      */
     package: null
 };
-var CLI = Class.extend({
+var Cli = Class.extend({
     constructor: function () {
         this.console = console;
+        this.Cli = Cli;
         this[_bin] = null;
         this[_banner] = null;
         this[_rootCommander] = {
@@ -60,7 +62,7 @@ var CLI = Class.extend({
     /**
      * 配置 banner 信息
      * @param banner {string}
-     * @returns {CLI}
+     * @returns {Cli}
      */
     banner: function (banner) {
         this[_banner] = banner;
@@ -71,7 +73,7 @@ var CLI = Class.extend({
      * 新增命令
      * @param [command] {string} 命令
      * @param [description] {string} 描述
-     * @returns {CLI}
+     * @returns {Cli}
      */
     command: function (command, description) {
         if (command) {
@@ -113,7 +115,7 @@ var CLI = Class.extend({
     /**
      * 版本配置
      * @param [description] {string}
-     * @returns {CLI}
+     * @returns {Cli}
      */
     versioning: function (description) {
         return this.option('version', {
@@ -127,7 +129,7 @@ var CLI = Class.extend({
     /**
      * 帮助配置
      * @param [description] {string}
-     * @returns {CLI}
+     * @returns {Cli}
      */
     helper: function (description) {
         return this.option('help', {
@@ -142,7 +144,7 @@ var CLI = Class.extend({
      * 添加用法
      * @param example {string}
      * @param [description] {string}
-     * @returns {CLI}
+     * @returns {Cli}
      */
     usage: function (example, description) {
         this[_currentCommander].commandUsageList.push({
@@ -156,7 +158,7 @@ var CLI = Class.extend({
      * 添加方法
      * @param method
      * @param [description]
-     * @returns {CLI}
+     * @returns {Cli}
      */
     method: function (method, description) {
         if (this[_currentCommander].root) {
@@ -183,7 +185,7 @@ var CLI = Class.extend({
      * @param [option.description] {string} 描述
      * @param [option.required=false] {boolean} 是否必填
      * @param [option.message] {string} 参数不符合要求时显示
-     * @returns {CLI}
+     * @returns {Cli}
      */
     option: function (key, option) {
         if (typeis.String(option)) {
@@ -205,7 +207,7 @@ var CLI = Class.extend({
     /**
      * 执行动作
      * @param action {function} 动作
-     * @returns {CLI}
+     * @returns {Cli}
      */
     action: function (action) {
         if (!typeis.Function(action)) {
@@ -226,7 +228,7 @@ var CLI = Class.extend({
     /**
      * 参数有错误
      * @param error
-     * @returns {CLI}
+     * @returns {Cli}
      */
     error: function (error) {
         if (!typeis.Function(error)) {
@@ -245,7 +247,7 @@ var CLI = Class.extend({
      * @param [options.breakLength]
      * @param [options.bin]
      * @param [options.package]
-     * @returns {CLI}
+     * @returns {Cli}
      */
     parse: function (argv, options) {
         var args = access.args(arguments);
@@ -389,12 +391,15 @@ var CLI = Class.extend({
      * 输出版本并进行版本比较
      */
     version: function () {
-        this.console.log('local version', this[_options].package.version);
         this[_checkVersion]();
+    },
+
+    unknow: function () {
+
     }
 });
-var sole = CLI.sole;
-var prot = CLI.prototype;
+var sole = Cli.sole;
+var prot = Cli.prototype;
 var _options = sole();
 var _bin = sole();
 var _banner = sole();
@@ -745,9 +750,10 @@ prot[_checkVersion] = function () {
     var the = this;
     var pkg = this[_options].package;
 
+    this.console.log('The local version is %s.', pkg.version);
     this.console.loading();
     request({
-        url: this[_options].registry + pkg.name
+        url: url.join(this[_options].registry, pkg.name)
     }, function (err, body) {
         /* istanbul ignore if */
         if (err) {
@@ -776,17 +782,21 @@ prot[_checkVersion] = function () {
         if (version.lt(currentVersion, latestVersion)) {
             the.console.log(
                 the.console.pretty(
-                    'update available',
+                    'Update available %s → %s.',
                     currentVersion,
-                    '→',
                     latestVersion,
                     [
-                        'bold',
-                        'redBG',
-                        'white'
+                        'bold'
                     ]
                 )
             );
+            the.console.log('Run `' +
+                the.console.pretty('npm install %s --global --registry=%s', [
+                    'bold'
+                ]) +
+                '` to update.', pkg.name, the[_options].registry);
+        } else {
+            the.console.log('The local version is up to date.');
         }
     });
 
@@ -801,9 +811,9 @@ prot.$$injectConsole$$ = function (_console) {
     this.console = _console;
 };
 
-CLI.defaults = defaults;
+Cli.defaults = defaults;
 
-module.exports = CLI;
+module.exports = Cli;
 
 // =============================
 
