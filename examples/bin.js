@@ -12,21 +12,26 @@ var cli = require('../src/index');
 var console = require('blear.node.console');
 
 cli
-    .command()
-    .versioning()
-    .helper()
-    .action(function () {
-        console.log('root command action');
-    })
-    .command('get')
-    .option('url', {
-        alias: 'u',
-        description: 'url 地址'
-    })
-    .action(function (args, params) {
-        console.log('get command');
-        console.log('args', args);
-        console.log('params', params);
+    // .command()
+    // .versioning()
+    // .helper()
+    // .action(function () {
+    //     console.log('root command action');
+    // })
+    // .command('get')
+    // .option('url', {
+    //     alias: 'u',
+    //     description: 'url 地址'
+    // })
+    // .action(function (args, params) {
+    //     console.log('get command');
+    //     console.log('args', args);
+    //     console.log('params', params);
+    // })
+    // .command('xyz')
+    .guess(function (command) {
+        console.log('guess command');
+        console.log('command', command);
     })
     .parse({
         bin: 'bbb',

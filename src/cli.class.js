@@ -21,6 +21,9 @@ var url = require('blear.utils.url');
 var path = require('path');
 var minimist = require('minimist');
 
+var noop = function () {
+    // ignore
+};
 var defaults = {
     /**
      * 检查仓库，用户版本号检测
@@ -57,6 +60,10 @@ var Cli = Class.extend({
         };
         this[_commanderMap] = {};
         this[_commanderList] = [];
+        this[_guess] = function (command) {
+            this.console.log('The `%s` command does not exist.' +
+                ' Please pay attention to the spell check.', command);
+        };
     },
 
     /**
@@ -96,7 +103,7 @@ var Cli = Class.extend({
         this[_currentCommander].commandOptions = this[_currentCommandOptions] = {};
         this[_currentCommander].commandOptionsAliases = {};
         this[_currentCommander].commandAction = function () {
-            // ignore
+            this.console.log('The `%s` command does nothing.', command);
         };
         this[_currentCommander].commandError = this[_error];
         this[_currentCommander].commandDescription = description || '';
@@ -250,6 +257,11 @@ var Cli = Class.extend({
      * @returns {Cli}
      */
     parse: function (argv, options) {
+        // 根命令未配置
+        if (this[_rootCommander].root && this[_rootCommander].default) {
+            throw new Error('at least you need to configure the root command');
+        }
+
         var args = access.args(arguments);
 
         if (args.length === 1) {
@@ -284,6 +296,7 @@ var Cli = Class.extend({
      * 打印帮助信息
      * @param command {string} 命令
      * @param [params] {array} 其他参数
+     * @returns {Cli}
      */
     help: function (command, params) {
         var the = this;
@@ -385,17 +398,29 @@ var Cli = Class.extend({
             this.console.log(buildTitle(optionsPrints, 'Option'));
             this[_print](padding, optionsPrints);
         }
+
+        return this;
     },
 
     /**
      * 输出版本并进行版本比较
+     * @returns {Cli}
      */
     version: function () {
         this[_checkVersion]();
+        return this;
     },
 
-    unknow: function () {
-
+    /**
+     * 命令猜想
+     * @param guess
+     * @returns {Cli}
+     */
+    guess: function (guess) {
+        if (typeis.Function(guess)) {
+            this[_guess] = guess;
+        }
+        return this;
     }
 });
 var sole = Cli.sole;
@@ -419,6 +444,7 @@ var _optionLimit = sole();
 var _optionFor = sole();
 var _optionAlias = sole();
 var _checkVersion = sole();
+var _guess = sole();
 
 prot[_slogan] = function () {
     if (this[_banner]) {
@@ -436,14 +462,8 @@ prot[_exec] = function (command, params) {
     var commander = command ? this[_commanderMap][command] : this[_rootCommander];
 
     // 子命令未配置
-    /* istanbul ignore if */
     if (!commander) {
-        return;
-    }
-
-    // 根命令未配置
-    /* istanbul ignore if */
-    if (!commander.commandOptions) {
+        this[_guess].call(this, command);
         return;
     }
 
@@ -799,7 +819,6 @@ prot[_checkVersion] = function () {
             the.console.log('The local version is up to date.');
         }
     });
-
 };
 
 /**

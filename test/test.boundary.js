@@ -14,11 +14,19 @@ var argv = require('./argv');
 
 describe('boundary', function () {
 
-    it('no-package', function () {
+    it('no-root-command', function () {
         var cli = new Cli();
 
         expect(function () {
             cli.parse(argv());
+        }).toThrowError('at least you need to configure the root command');
+    });
+
+    it('no-package', function () {
+        var cli = new Cli();
+
+        expect(function () {
+            cli.command().parse(argv());
         }).toThrowError('the `package` parameter cannot be empty');
     });
 
@@ -42,6 +50,7 @@ describe('boundary', function () {
 
         expect(function () {
             cli
+                .command()
                 .command('abc')
                 .command('abc')
                 .parse(argv(), {
