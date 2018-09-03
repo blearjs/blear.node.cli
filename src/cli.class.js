@@ -230,6 +230,49 @@ var Cli = Class.extend({
     },
 
     /**
+     * 执行命令
+     * @param command {string} 命令
+     * @param [params] {array} 参数
+     * @param [argv] {object} 配置
+     * @returns {Cli}
+     */
+    exec: function (command, params, argv) {
+        var args = access.args(arguments);
+        var _0 = args[0];
+        var _1 = args[1];
+        var _2 = args[2];
+
+        switch (args.length) {
+            case 0:
+                throw new Error('please specify the command to be executed');
+
+            case 1:
+                params = [];
+                argv = {};
+                break;
+
+            case 2:
+                if (typeis.Array(_1)) {
+                    params = _1;
+                    argv = {};
+                } else if (typeis.Object(_1)) {
+                    argv = _1;
+                    params = [];
+                } else {
+                    throw new Error('the second parameter type must be an object or an array');
+                }
+                break;
+        }
+
+        if (!typeis.String(command)) {
+            throw new Error('`command` parameter type must be a string');
+        }
+
+        this[_exec](command, params, argv);
+        return this;
+    },
+
+    /**
      * 参数有错误
      * @param error
      * @returns {Cli}
@@ -286,7 +329,7 @@ var Cli = Class.extend({
         });
         var command = this[_argv]._.shift();
         var params = this[_argv]._;
-        this[_exec](command, params);
+        this[_exec](command, params, this[_argv]);
     },
 
     /**
@@ -452,10 +495,11 @@ prot[_slogan] = function () {
 /**
  * 执行命令
  * @param command {string | undefined}
- * @param [params] {array}
+ * @param params {array}
+ * @param argv {object}
  * @returns {*}
  */
-prot[_exec] = function (command, params) {
+prot[_exec] = function (command, params, argv) {
     var commander = command ? this[_commanderMap][command] : this[_rootCommander];
 
     // 子命令未配置
@@ -477,12 +521,12 @@ prot[_exec] = function (command, params) {
         methodOptions = commander.methodOptionsMap[method];
     }
 
-    if (this[_argv].help && helpOption) {
+    if (argv.help && helpOption) {
         this[_slogan]();
         return helpOption.action.call(this, command, params);
     }
 
-    if (this[_argv].version && versionOPtion) {
+    if (argv.version && versionOPtion) {
         this[_slogan]();
         return versionOPtion.action.call(this, command, params);
     }
@@ -502,7 +546,7 @@ prot[_exec] = function (command, params) {
             var expectType = option.type;
 
             array.each(option.keys, function (index, k) {
-                var v1 = the[_argv][k];
+                var v1 = argv[k];
                 var v2 = v1;
                 var actualType = typeis(v1);
 
