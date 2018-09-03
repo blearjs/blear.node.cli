@@ -501,11 +501,16 @@ prot[_slogan] = function () {
  */
 prot[_exec] = function (command, params, argv) {
     var commander = command ? this[_commanderMap][command] : this[_rootCommander];
+    object.each(argv, function (k, v) {
+        if (typeis.Number(v)) {
+            argv[k] = string.ify(v);
+        }
+    });
 
     // 子命令未配置
     if (!commander) {
         this[_slogan]();
-        this[_guess].call(this, command);
+        this[_guess].call(this, command, argv, params);
         return;
     }
 

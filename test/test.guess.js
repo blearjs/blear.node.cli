@@ -31,13 +31,17 @@ describe('guess', function () {
         cli
             .banner(banner)
             .command()
-            .guess(function (command) {
+            .guess(function (command, args, params) {
                 expect(this).toBe(cli);
                 expect(command).toBe('abc');
                 expect(fakeConsole.get()).toEqual(banner + '\n');
+                expect(args.a).toEqual(true);
+                expect(args.b).toEqual(true);
+                expect(args.def).toEqual('1');
+                expect(params).toEqual(['def', 'ghi']);
                 done();
             })
-            .parse(argv('abc'), options);
+            .parse(argv('abc', 'def', 'ghi', '-ab', '--def=1'), options);
     });
 
 });
