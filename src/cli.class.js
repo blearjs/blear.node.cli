@@ -334,13 +334,13 @@ var Cli = Class.extend({
 
     /**
      * 打印帮助信息
-     * @param command {string} 命令
+     * @param [command] {string} 命令
      * @param [params] {array} 其他参数
      * @returns {Cli}
      */
     help: function (command, params) {
         var the = this;
-        var commander = this[_commanderMap][command] || this[_rootCommander];
+        var commander = command ? this[_commanderMap][command] : this[_rootCommander] || this[_rootCommander];
         var commanders = commander === this[_rootCommander] ? this[_commanderList] : [commander];
         var padding = 2;
         var titleColors = ['inverse'];
