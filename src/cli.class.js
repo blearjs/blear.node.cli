@@ -334,7 +334,7 @@ var Cli = Class.extend({
 
     /**
      * 打印帮助信息
-     * @param [command] {string} 命令
+     * @param [command] {string | null} 命令
      * @param [params] {array} 其他参数
      * @returns {Cli}
      */
