@@ -34,7 +34,7 @@ describe('guess', function () {
             .guess(function (command, args, params) {
                 expect(this).toBe(cli);
                 expect(command).toBe('abc');
-                expect(fakeConsole.get()).toEqual(banner + '\n');
+                expect(fakeConsole.get()).toEqual('');
                 expect(args.a).toEqual(true);
                 expect(args.b).toEqual(true);
                 expect(args.def).toEqual('1');
