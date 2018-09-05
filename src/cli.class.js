@@ -58,6 +58,7 @@ var Cli = Class.extend({
         this[_commanderMap] = {};
         this[_commanderList] = [];
         this[_guess] = function (command) {
+            this[_slogan]();
             this.console.log('The `%s` command does not exist.' +
                 ' Please pay attention to the spell check.', command);
         };
@@ -509,7 +510,6 @@ prot[_exec] = function (command, argv, params) {
 
     // 子命令未配置
     if (!commander) {
-        this[_slogan]();
         this[_guess].call(this, command, argv, params);
         return;
     }
