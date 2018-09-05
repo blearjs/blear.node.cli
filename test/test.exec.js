@@ -131,10 +131,10 @@ describe('exec', function () {
                 done();
             });
 
-        cli.exec('abc', ['def', 'ghi'], {
+        cli.exec('abc', {
             a: 1,
             bbb: 2
-        });
+        }, ['def', 'ghi']);
     });
 
 });

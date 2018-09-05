@@ -232,11 +232,11 @@ var Cli = Class.extend({
     /**
      * 执行命令
      * @param command {string} 命令
-     * @param [params] {array} 参数
      * @param [argv] {object} 配置
+     * @param [params] {array} 参数
      * @returns {Cli}
      */
-    exec: function (command, params, argv) {
+    exec: function (command, argv, params) {
         var args = access.args(arguments);
         var _0 = args[0];
         var _1 = args[1];
@@ -247,8 +247,8 @@ var Cli = Class.extend({
                 throw new Error('please specify the command to be executed');
 
             case 1:
-                params = [];
                 argv = {};
+                params = [];
                 break;
 
             case 2:
@@ -268,7 +268,7 @@ var Cli = Class.extend({
             throw new Error('`command` parameter type must be a string');
         }
 
-        this[_exec](command, params, argv);
+        this[_exec](command, argv, params);
         return this;
     },
 
@@ -329,7 +329,7 @@ var Cli = Class.extend({
         });
         var command = this[_argv]._.shift();
         var params = this[_argv]._;
-        this[_exec](command, params, this[_argv]);
+        this[_exec](command, this[_argv], params);
     },
 
     /**
@@ -495,11 +495,11 @@ prot[_slogan] = function () {
 /**
  * 执行命令
  * @param command {string | undefined}
- * @param params {array}
  * @param argv {object}
+ * @param params {array}
  * @returns {*}
  */
-prot[_exec] = function (command, params, argv) {
+prot[_exec] = function (command, argv, params) {
     var commander = command ? this[_commanderMap][command] : this[_rootCommander];
     object.each(argv, function (k, v) {
         if (typeis.Number(v)) {
