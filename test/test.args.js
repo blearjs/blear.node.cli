@@ -189,7 +189,7 @@ describe('args', function () {
             })
             .action(function (args) {
                 console.log(args);
-                expect(args.opt1).toEqual(['']);
+                expect(args.opt1).toEqual([]);
                 done();
             });
         cli.parse(argv('--opt1'), options);
