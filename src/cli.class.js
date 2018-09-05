@@ -571,7 +571,7 @@ prot[_exec] = function (command, argv, params) {
                                 break;
 
                             case 'boolean':
-                                v2 = '';
+                                v2 = option.default;
                                 break;
                         }
                         v2 = string.ify(v2);
@@ -584,7 +584,7 @@ prot[_exec] = function (command, argv, params) {
                                 break;
 
                             case 'boolean':
-                                v2 = [''];
+                                v2 = option.default;
                                 break;
                         }
                         break;

@@ -247,5 +247,43 @@ describe('args', function () {
         cli.parse(argv('--opt1', 'abc', '--opt1', 'def'), options);
     });
 
+    it('布尔值转字符串', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1', {
+                type: 'string',
+                default: '0'
+            })
+            .action(function (args) {
+                console.log(args);
+                expect(args.opt1).toEqual('0');
+                done();
+            });
+        cli.parse(argv('--opt1'), options);
+    });
+
+    it('布尔值转数组', function (done) {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .command()
+            .option('opt1', {
+                type: 'array',
+                default: ['0']
+            })
+            .action(function (args) {
+                console.log(args);
+                expect(args.opt1).toEqual(['0']);
+                done();
+            });
+        cli.parse(argv('--opt1'), options);
+    });
+
 });
 
