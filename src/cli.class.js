@@ -488,8 +488,14 @@ var _checkVersion = sole();
 var _guess = sole();
 
 prot[_slogan] = function () {
-    if (this[_banner]) {
-        this.console.log(this[_banner]);
+    switch (typeis(this[_banner])) {
+        case 'string':
+            this.console.log(this[_banner]);
+            break;
+
+        case 'function':
+            this[_banner]();
+            break;
     }
 };
 
