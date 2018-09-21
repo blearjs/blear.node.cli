@@ -116,6 +116,22 @@ describe('banner', function () {
         expect(fakeConsole.get()).toMatch(bannerReg(banner));
     });
 
+    it('function type of banner', function () {
+        var cli = new Cli();
+        var fakeConsole = new FakeConsole();
+        var banner = 'banner' + Date.now();
+
+        cli.$$injectConsole$$(fakeConsole);
+        cli
+            .banner(function () {
+                this.console.log(banner);
+            })
+            .command()
+            .parse(argv(), options);
+        console.log(fakeConsole.get());
+        expect(fakeConsole.get()).toMatch(bannerReg(banner));
+    });
+
 });
 
 
