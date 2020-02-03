@@ -200,7 +200,6 @@ var Cli = Class.extend({
         }
 
         option = option || {};
-        key = string.separatorize(key);
         option.key = key;
 
         this[_optionLimit](option);
